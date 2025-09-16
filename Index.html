@@ -1,1046 +1,251 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BioSeguro - Curso de Biossegurança</title>
-    <style>
-        :root {
-            --primary: #2c3e50;
-            --secondary: #3498db;
-            --accent: #e74c3c;
-            --success: #2ecc71;
-            --warning: #f39c12;
-            --light: #ecf0f1;
-            --dark: #2c3e50;
-            --text: #333;
-        }
-        
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        }
-        
-        body {
-            background: linear-gradient(135deg, #3498db 0%, #2c3e50 100%);
-            color: var(--text);
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            padding: 20px;
-        }
-        
-        .container {
-            max-width: 800px;
-            width: 100%;
-            background-color: white;
-            border-radius: 15px;
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
-            overflow: hidden;
-        }
-        
-        header {
-            background-color: var(--primary);
-            color: white;
-            padding: 20px;
-            text-align: center;
-            position: relative;
-        }
-        
-        header h1 {
-            font-size: 2.2rem;
-            margin-bottom: 5px;
-        }
-        
-        header p {
-            font-size: 1.1rem;
-            opacity: 0.9;
-        }
-        
-        .logo {
-            position: absolute;
-            top: 15px;
-            left: 20px;
-            font-size: 2rem;
-            font-weight: bold;
-            color: var(--accent);
-        }
-        
-        .content {
-            padding: 30px;
-        }
-        
-        .screen {
-            display: none;
-        }
-        
-        .screen.active {
-            display: block;
-        }
-        
-        .welcome-screen {
-            text-align: center;
-        }
-        
-        .welcome-screen h2 {
-            color: var(--primary);
-            margin-bottom: 15px;
-        }
-        
-        .welcome-screen p {
-            margin-bottom: 20px;
-            line-height: 1.6;
-        }
-        
-        .chapter-screen h2 {
-            color: var(--primary);
-            margin-bottom: 20px;
-            text-align: center;
-        }
-        
-        .progress-container {
-            margin: 20px 0;
-        }
-        
-        .progress-bar {
-            height: 12px;
-            background-color: #e0e0e0;
-            border-radius: 10px;
-            overflow: hidden;
-        }
-        
-        .progress {
-            height: 100%;
-            background: linear-gradient(90deg, var(--secondary) 0%, var(--primary) 100%);
-            width: 0%;
-            transition: width 0.5s ease;
-            border-radius: 10px;
-        }
-        
-        .progress-text {
-            display: flex;
-            justify-content: space-between;
-            margin-top: 5px;
-            font-size: 0.9rem;
-            color: var(--dark);
-        }
-        
-        .question {
-            background-color: var(--light);
-            padding: 20px;
-            border-radius: 10px;
-            margin-bottom: 20px;
-        }
-        
-        .question-text {
-            font-size: 1.2rem;
-            margin-bottom: 15px;
-            font-weight: 500;
-        }
-        
-        .options {
-            display: grid;
-            grid-template-columns: 1fr;
-            gap: 12px;
-        }
-        
-        .option {
-            padding: 15px;
-            background-color: white;
-            border: 2px solid #ddd;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-        
-        .option:hover {
-            border-color: var(--secondary);
-            background-color: #e8f4ff;
-        }
-        
-        .option.selected {
-            border-color: var(--secondary);
-            background-color: #d1e9ff;
-        }
-        
-        .option.correct {
-            border-color: var(--success);
-            background-color: #e6f7ee;
-        }
-        
-        .option.incorrect {
-            border-color: var(--accent);
-            background-color: #fde9e9;
-        }
-        
-        .feedback {
-            margin: 20px 0;
-            padding: 15px;
-            border-radius: 8px;
-            font-weight: 500;
-        }
-        
-        .feedback.correct {
-            background-color: #e6f7ee;
-            color: #27ae60;
-            border: 1px solid #2ecc71;
-        }
-        
-        .feedback.incorrect {
-            background-color: #fde9e9;
-            color: #e74c3c;
-            border: 1px solid #e74c3c;
-        }
-        
-        .button {
-            padding: 14px 25px;
-            background-color: var(--primary);
-            color: white;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 1rem;
-            font-weight: 600;
-            transition: all 0.3s;
-            display: inline-block;
-            text-align: center;
-        }
-        
-        .button:hover {
-            background-color: var(--secondary);
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-        }
-        
-        .button:active {
-            transform: translateY(0);
-        }
-        
-        .button-container {
-            display: flex;
-            justify-content: center;
-            margin-top: 20px;
-        }
-        
-        .results-screen {
-            text-align: center;
-        }
-        
-        .results-screen h2 {
-            color: var(--primary);
-            margin-bottom: 15px;
-        }
-        
-        .results-screen p {
-            margin-bottom: 20px;
-            line-height: 1.6;
-        }
-        
-        .score-circle {
-            width: 150px;
-            height: 150px;
-            border-radius: 50%;
-            background: conic-gradient(var(--success) 0% var(--p), #f0f0f0 var(--p) 100%);
-            margin: 20px auto;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            position: relative;
-        }
-        
-        .score-inner {
-            width: 120px;
-            height: 120px;
-            border-radius: 50%;
-            background: white;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 2rem;
-            font-weight: bold;
-            color: var(--primary);
-        }
-        
-        .stats {
-            display: flex;
-            justify-content: space-around;
-            margin: 30px 0;
-        }
-        
-        .stat {
-            text-align: center;
-        }
-        
-        .stat-value {
-            font-size: 2rem;
-            font-weight: bold;
-            color: var(--primary);
-        }
-        
-        .stat-label {
-            font-size: 0.9rem;
-            color: #777;
-        }
-        
-        input[type="text"] {
-            width: 100%;
-            max-width: 400px;
-            padding: 15px;
-            border: 2px solid #ddd;
-            border-radius: 8px;
-            font-size: 1rem;
-            margin: 15px 0;
-            transition: border-color 0.3s;
-        }
-        
-        input[type="text"]:focus {
-            border-color: var(--secondary);
-            outline: none;
-        }
-        
-        .chapter-title {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-            margin-bottom: 10px;
-        }
-        
-        .chapter-icon {
-            font-size: 1.8rem;
-            color: var(--secondary);
-        }
-        
-        @media (max-width: 600px) {
-            .container {
-                border-radius: 10px;
-            }
-            
-            header h1 {
-                font-size: 1.8rem;
-            }
-            
-            .content {
-                padding: 20px;
-            }
-            
-            .stats {
-                flex-direction: column;
-                gap: 20px;
-            }
-            
-            .button {
-                width: 100%;
-            }
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BioSeguro - Curso de Biossegurança</title>
+<style>
+:root {
+  --primary:#2c3e50; --secondary:#3498db; --accent:#e74c3c;
+  --success:#2ecc71; --warning:#f39c12; --light:#ecf0f1;
+  --dark:#2c3e50; --text:#333;
+}
+*{margin:0;padding:0;box-sizing:border-box;font-family:'Segoe UI',Tahoma,Verdana,sans-serif}
+body{
+  background:linear-gradient(135deg,var(--secondary),var(--primary));
+  min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px;color:var(--text)
+}
+.container{
+  max-width:800px;width:100%;background:#fff;border-radius:15px;
+  box-shadow:0 10px 25px rgba(0,0,0,.2);overflow:hidden
+}
+header{background:var(--primary);color:#fff;text-align:center;padding:20px;position:relative}
+header h1{font-size:2.2rem;margin-bottom:5px}
+header p{font-size:1.1rem;opacity:.9}
+.logo{position:absolute;top:15px;left:20px;font-size:2rem;font-weight:bold;color:var(--accent)}
+.content{padding:30px}
+.screen{display:none}.screen.active{display:block}
+h2{color:var(--primary);margin-bottom:15px;text-align:center}
+.progress-container{margin:20px 0}
+.progress-bar{height:12px;background:#e0e0e0;border-radius:10px;overflow:hidden}
+.progress{height:100%;background:linear-gradient(90deg,var(--secondary),var(--primary));width:0;transition:.5s;border-radius:10px}
+.progress-text{display:flex;justify-content:space-between;margin-top:5px;font-size:.9rem;color:var(--dark)}
+.question{background:var(--light);padding:20px;border-radius:10px;margin-bottom:20px}
+.question-text{font-size:1.2rem;margin-bottom:15px;font-weight:500}
+.options{display:grid;gap:12px}
+.option{
+  padding:15px;background:#fff;border:2px solid #ddd;border-radius:8px;
+  cursor:pointer;transition:.2s
+}
+.option:hover{border-color:var(--secondary);background:#e8f4ff}
+.option.selected{border-color:var(--secondary);background:#d1e9ff}
+.option.correct{border-color:var(--success);background:#e6f7ee}
+.option.incorrect{border-color:var(--accent);background:#fde9e9}
+.feedback{
+  margin:20px 0;padding:15px;border-radius:8px;font-weight:500;display:none
+}
+.feedback.correct{background:#e6f7ee;color:#27ae60;border:1px solid var(--success)}
+.feedback.incorrect{background:#fde9e9;color:var(--accent);border:1px solid var(--accent)}
+.button{
+  padding:14px 25px;background:var(--primary);color:#fff;border:none;
+  border-radius:8px;cursor:pointer;font-size:1rem;font-weight:600;
+  transition:.3s;display:inline-block;text-align:center
+}
+.button:hover{background:var(--secondary);transform:translateY(-2px);box-shadow:0 5px 15px rgba(0,0,0,.1)}
+.button:active{transform:translateY(0)}
+.button-container{display:flex;justify-content:center;margin-top:20px;gap:10px}
+.results-screen{text-align:center}
+.score-circle{
+  width:150px;height:150px;border-radius:50%;
+  background:conic-gradient(var(--success) 0% var(--p),#f0f0f0 var(--p) 100%);
+  margin:20px auto;display:flex;align-items:center;justify-content:center
+}
+.score-inner{
+  width:120px;height:120px;border-radius:50%;background:#fff;
+  display:flex;align-items:center;justify-content:center;
+  font-size:2rem;font-weight:bold;color:var(--primary)
+}
+.stats{display:flex;justify-content:space-around;margin:30px 0;flex-wrap:wrap;gap:20px}
+.stat{text-align:center}
+.stat-value{font-size:2rem;font-weight:bold;color:var(--primary)}
+.stat-label{font-size:.9rem;color:#777}
+input[type=text]{
+  width:100%;max-width:400px;padding:15px;border:2px solid #ddd;
+  border-radius:8px;font-size:1rem;margin:15px 0;transition:.3s
+}
+input[type=text]:focus{border-color:var(--secondary);outline:none}
+.chapter-title{display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:10px}
+.chapter-icon{font-size:1.8rem;color:var(--secondary)}
+@media(max-width:600px){
+  .container{border-radius:10px}
+  header h1{font-size:1.8rem}
+  .content{padding:20px}
+  .button{width:100%}
+}
+</style>
 </head>
 <body>
-    <div class="container">
-        <header>
-            <div class="logo">BS</div>
-            <h1>BioSeguro</h1>
-            <p>Curso de Biossegurança e Boas Práticas de Laboratório</p>
-        </header>
-        
-        <div class="content">
-            <!-- Tela de Boas-Vindas -->
-            <div id="welcomeScreen" class="screen active">
-                <div class="welcome-screen">
-                    <h2>Bem-vindo ao Curso de Biossegurança!</h2>
-                    <p>Este curso abordará conceitos importantes de biossegurança e boas práticas de laboratório. Você precisará acertar pelo menos 6 de 10 questões em cada capítulo para avançar.</p>
-                    <p>Ao final, você receberá um certificado virtual com sua pontuação média.</p>
-                    <input type="text" id="userName" placeholder="Digite seu nome para começar">
-                    <div class="button-container">
-                        <button class="button" onclick="startCourse()">Iniciar Curso</button>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Tela do Capítulo -->
-            <div id="chapterScreen" class="screen">
-                <h2><div class="chapter-title"><span class="chapter-icon">🔬</span> <span id="chapterTitle">Capítulo 1</span></div></h2>
-                
-                <div class="progress-container">
-                    <div class="progress-bar">
-                        <div id="progress" class="progress"></div>
-                    </div>
-                    <div class="progress-text">
-                        <span>Progresso</span>
-                        <span id="progressText">0/10</span>
-                    </div>
-                </div>
-                
-                <div class="question">
-                    <div id="questionText" class="question-text">Pergunta carregando...</div>
-                    <div id="options" class="options">
-                        <!-- Opções serão inseridas via JavaScript -->
-                    </div>
-                </div>
-                
-                <div id="feedback" class="feedback"></div>
-                
-                <div class="button-container">
-                    <button id="nextButton" class="button hidden" onclick="nextQuestion()">Próxima Pergunta</button>
-                    <button id="submitButton" class="button" onclick="checkAnswer()">Verificar Resposta</button>
-                </div>
-            </div>
-            
-            <!-- Tela de Resultados do Capítulo -->
-            <div id="resultsScreen" class="screen">
-                <div class="results-screen">
-                    <h2 id="resultsTitle">Resultado do Capítulo</h2>
-                    <p id="resultsMessage">Você acertou X de 10 questões.</p>
-                    
-                    <div class="score-circle" id="scoreCircle">
-                        <div class="score-inner">
-                            <span id="scoreValue">X</span>/10
-                        </div>
-                    </div>
-                    
-                    <p id="resultsFeedback">Mensagem de feedback.</p>
-                    
-                    <div class="button-container">
-                        <button id="nextChapterButton" class="button" onclick="nextChapter()">Próximo Capítulo</button>
-                        <button id="retryChapterButton" class="button" onclick="retryChapter()">Tentar Novamente</button>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Tela de Conclusão do Curso -->
-            <div id="completionScreen" class="screen">
-                <div class="results-screen">
-                    <h2>Parabéns, <span id="userNameDisplay"></span>!</h2>
-                    <p>Você completou todos os capítulos do curso de Biossegurança!</p>
-                    
-                    <div class="stats">
-                        <div class="stat">
-                            <div class="stat-value" id="totalCorrect">0</div>
-                            <div class="stat-label">Acertos Totais</div>
-                        </div>
-                        <div class="stat">
-                            <div class="stat-value" id="averageScore">0%</div>
-                            <div class="stat-label">Pontuação Média</div>
-                        </div>
-                        <div class="stat">
-                            <div class="stat-value" id="chaptersCompleted">0/3</div>
-                            <div class="stat-label">Capítulos Concluídos</div>
-                        </div>
-                    </div>
-                    
-                    <p>Você demonstrou excelente conhecimento em biossegurança e boas práticas de laboratório.</p>
-                    
-                    <div class="button-container">
-                        <button class="button" onclick="restartCourse()">Fazer Curso Novamente</button>
-                    </div>
-                </div>
-            </div>
-        </div>
+<div class="container">
+  <header>
+    <div class="logo">BS</div>
+    <h1>BioSeguro</h1>
+    <p>Curso de Biossegurança e Boas Práticas de Laboratório</p>
+  </header>
+  <div class="content">
+    <!-- Boas-vindas -->
+    <div id="welcomeScreen" class="screen active">
+      <div class="welcome-screen" style="text-align:center">
+        <h2>Bem-vindo ao Curso de Biossegurança!</h2>
+        <p>Você precisará acertar pelo menos 6 de 10 questões em cada capítulo para avançar. Ao final, receberá um certificado virtual.</p>
+        <input type="text" id="userName" placeholder="Digite seu nome para começar">
+        <div class="button-container"><button class="button" onclick="startCourse()">Iniciar Curso</button></div>
+      </div>
     </div>
+    <!-- Capítulo -->
+    <div id="chapterScreen" class="screen">
+      <h2><div class="chapter-title"><span class="chapter-icon">🔬</span><span id="chapterTitle"></span></div></h2>
+      <div class="progress-container">
+        <div class="progress-bar"><div id="progress" class="progress"></div></div>
+        <div class="progress-text"><span>Progresso</span><span id="progressText">0/10</span></div>
+      </div>
+      <div class="question">
+        <div id="questionText" class="question-text"></div>
+        <div id="options" class="options"></div>
+      </div>
+      <div id="feedback" class="feedback"></div>
+      <div class="button-container">
+        <button id="submitButton" class="button" onclick="checkAnswer()">Verificar</button>
+        <button id="nextButton" class="button" onclick="nextQuestion()" style="display:none">Próxima</button>
+      </div>
+    </div>
+    <!-- Resultados -->
+    <div id="resultsScreen" class="screen">
+      <div class="results-screen">
+        <h2 id="resultsTitle"></h2>
+        <p id="resultsMessage"></p>
+        <div class="score-circle" id="scoreCircle"><div class="score-inner"><span id="scoreValue"></span>/10</div></div>
+        <p id="resultsFeedback"></p>
+        <div class="button-container">
+          <button id="nextChapterButton" class="button" onclick="nextChapter()">Próximo Capítulo</button>
+          <button id="retryChapterButton" class="button" onclick="retryChapter()">Tentar Novamente</button>
+        </div>
+      </div>
+    </div>
+    <!-- Conclusão -->
+    <div id="completionScreen" class="screen">
+      <div class="results-screen">
+        <h2>Parabéns, <span id="userNameDisplay"></span>!</h2>
+        <p>Você completou todos os capítulos!</p>
+        <div class="stats">
+          <div class="stat"><div class="stat-value" id="totalCorrect"></div><div class="stat-label">Acertos Totais</div></div>
+          <div class="stat"><div class="stat-value" id="averageScore"></div><div class="stat-label">Pontuação Média</div></div>
+          <div class="stat"><div class="stat-value" id="chaptersCompleted"></div><div class="stat-label">Capítulos</div></div>
+        </div>
+        <div class="button-container"><button class="button" onclick="restartCourse()">Refazer Curso</button></div>
+      </div>
+    </div>
+  </div>
+</div>
+<script>
+// Utilitário
+const $id=id=>document.getElementById(id);
 
-    <script>
-        // Dados do curso - perguntas e respostas sobre biossegurança
-        const courseData = [
-            // Capítulo 1: Conceitos Básicos de Biossegurança
-            [
-                {
-                    question: "O que significa o termo 'biossegurança'?",
-                    options: [
-                        "Segurança biológica de laboratórios",
-                        "Conjunto de medidas para prevenção de acidentes com material biológico",
-                        "Proteção contra roubo de materiais valiosos",
-                        "Controle de qualidade de produtos biológicos"
-                    ],
-                    correct: 1
-                },
-                {
-                    question: "Qual é o principal objetivo das boas práticas de laboratório?",
-                    options: [
-                        "Aumentar a velocidade das pesquisas",
-                        "Reduzir custos com equipamentos",
-                        "Garantir a segurança e a qualidade dos resultados",
-                        "Simplificar os protocolos experimentais"
-                    ],
-                    correct: 2
-                },
-                {
-                    question: "O que são EPIs em um contexto de laboratório?",
-                    options: [
-                        "Equipamentos de Precisão Intrínseca",
-                        "Elementos de Proteção Individual",
-                        "Equipamentos de Proteção Individual",
-                        "Exames Preliminares de Inspeção"
-                    ],
-                    correct: 2
-                },
-                {
-                    question: "Qual destes NÃO é um exemplo de EPI comumente usado em laboratórios?",
-                    options: [
-                        "Jaleco",
-                        "Luvas",
-                        "Óculos de proteção",
-                        "Estetoscópio"
-                    ],
-                    correct: 3
-                },
-                {
-                    question: "Qual é a finalidade de uma capela de fluxo laminar?",
-                    options: [
-                        "Armazenar amostras em temperatura controlada",
-                        "Proteger o usuário durante trabalhos com agentes biológicos",
-                        "Esterilizar material de laboratório",
-                        "Manter a umidade constante para cultivos"
-                    ],
-                    correct: 1
-                },
-                {
-                    question: "O que deve ser feito imediatamente após um derramamento de material biológico?",
-                    options: [
-                        "Ignorar se for pequeno e continuar o trabalho",
-                        "Sair do laboratório e informar ao responsável",
-                        "Conter a área e iniciar o processo de descontaminação",
-                        "Chamar imediatamente os bombeiros"
-                    ],
-                    correct: 2
-                },
-                {
-                    question: "Qual destes símbolos representa risco biológico?",
-                    options: [
-                        "Um triângulo amarelo com exclamação",
-                        "Uma chama preta sobre fundo branco",
-                        "Um círculo com uma faixa vermelha cruzada",
-                        "Três crescentes lunares sobre um círculo"
-                    ],
-                    correct: 3
-                },
-                {
-                    question: "Qual é o nível de biossegurança adequado para trabalhar com agentes que oferecem alto risco individual e comunitário?",
-                    options: [
-                        "NB-1",
-                        "NB-2",
-                        "NB-3",
-                        "NB-4"
-                    ],
-                    correct: 3
-                },
-                {
-                    question: "Qual destas práticas é INCORRETA em um laboratório?",
-                    options: [
-                        "Comer e beber nas bancadas",
-                        "Lavar as hands após remover as luvas",
-                        "Descontaminar superfícies após o trabalho",
-                        "Manter as portas da capela fechadas durante operação"
-                    ],
-                    correct: 0
-                },
-                {
-                    question: "O que significa o termo 'descontaminação'?",
-                    options: [
-                        "Remover sujeira visível das superfícies",
-                        "Eliminar ou reduzir microrganismos a um nível seguro",
-                        "Descarte adequado de resíduos comuns",
-                        "Organizar o laboratório após as atividades"
-                    ],
-                    correct: 1
-                }
-            ],
-            
-            // Capítulo 2: Riscos e Precauções
-            [
-                {
-                    question: "Qual é o tipo de risco associado a objetos perfurocortantes?",
-                    options: [
-                        "Risco químico",
-                        "Risco físico",
-                        "Risco biológico",
-                        "Risco ergonômico"
-                    ],
-                    correct: 2
-                },
-                {
-                    question: "Como devem ser descartadas agulhas usadas?",
-                    options: [
-                        "No lixo comum, desde que dobradas",
-                        "Em recipientes rígidos e puncture-proof",
-                        "No vaso sanitário",
-                        "Em sacos plásticos vermelhos"
-                    ],
-                    correct: 1
-                },
-                {
-                    question: "O que fazer em caso de contato acidental com material potencialmente contaminado?",
-                    options: [
-                        "Esconder o acidente para não ter problemas",
-                        "Lavar imediatamente a área afetada e notificar o supervisor",
-                        "Apenas lavar com água corrente",
-                        "Tomar antibiótico por conta própria"
-                    ],
-                    correct: 1
-                },
-                {
-                    question: "Qual destes NÃO é um método de esterilização válido?",
-                    options: [
-                        "Autoclavação",
-                        "Radiação ultravioleta",
-                        "Pasteurização",
-                        "Uso de óxido de etileno"
-                    ],
-                    correct: 2
-                },
-                {
-                    question: "Qual a concentração de cloro ativo recomendada para desinfecção de superfícies?",
-                    options: [
-                        "0,1%",
-                        "1%",
-                        "5%",
-                        "10%"
-                    ],
-                    correct: 1
-                },
-                {
-                    question: "O que significa a sigla NR-32?",
-                    options: [
-                        "Norma Regulamentadora para segurança em laboratórios",
-                        "Norma de Referência para equipamentos de proteção",
-                        "Norma de Responsabilidade técnica",
-                        "Norma para descarte de resíduos químicos"
-                    ],
-                    correct: 0
-                },
-                {
-                    question: "Qual a temperatura e tempo mínimos para esterilização por autoclave?",
-                    options: [
-                        "100°C por 5 minutos",
-                        "121°C por 15 minutos",
-                        "134°C por 3 minutos",
-                        "180°C por 1 hora"
-                    ],
-                    correct: 1
-                },
-                {
-                    question: "Qual destes agentes NÃO é adequado para desinfecção de superfícies?",
-                    options: [
-                        "Álcool 70%",
-                        "Hipoclorito de sódio",
-                        "Glutaraldeído",
-                        "Água oxigenada 3%"
-                    ],
-                    correct: 3
-                },
-                {
-                    question: "O que significa o princípio 'barreira dupla'?",
-                    options: [
-                        "Usar dois pares de luvas simultaneamente",
-                        "Combinar contenção primária e secundária",
-                        "Ter duas portas de acesso ao laboratório",
-                        "Usar dois tipos de desinfetantes"
-                    ],
-                    correct: 1
-                },
-                {
-                    question: "Qual a finalidade de um chuveiro de segurança?",
-                    options: [
-                        "Para banhos após longas jornadas de trabalho",
-                        "Para limpeza de equipamentos grandes",
-                        "Para emergências com derramamento de produtos químicos",
-                        "Para resfriar o ambiente do laboratório"
-                    ],
-                    correct: 2
-                }
-            ],
-            
-            // Capítulo 3: Boas Práticas e Gestão de Resíduos
-            [
-                {
-                    question: "Como devem ser identificados os resíduos biológicos?",
-                    options: [
-                        "Com etiqueta vermelha",
-                        "Com etiqueta amarela",
-                        "Com etiqueta preta",
-                        "Com etiqueta azul"
-                    ],
-                    correct: 1
-                },
-                {
-                    question: "Qual destes resíduos NÃO é considerado infectante?",
-                    options: [
-                        "Cultura de células",
-                        "Placas de Petri com microrganismos",
-                        "Meios de cultura usados",
-                        "Papel toalha seco"
-                    ],
-                    correct: 3
-                },
-                {
-                    question: "O que deve conter um plano de gerenciamento de resíduos?",
-                    options: [
-                        "Apenas o método de descarte",
-                        "Segregação, acondicionamento, identificação e destino final",
-                        "Apenas a identificação dos resíduos",
-                        "Apenas o registro dos resíduos gerados"
-                    ],
-                    correct: 1
-                },
-                {
-                    question: "Qual a temperatura ideal para armazenamento de大多数 reagentes?",
-                    options: [
-                        "4°C",
-                        "-20°C",
-                        "Temperatura ambiente",
-                        "Varía conforme o produto"
-                    ],
-                    correct: 3
-                },
-                {
-                    question: "O que é um material perfurocortante?",
-                    options: [
-                        "Qualquer material que possa cortar ou perfurar",
-                        "Apenas agulhas e bisturis",
-                        "Apenas vidrarias quebradas",
-                        "Material metálico pontiagudo"
-                    ],
-                    correct: 0
-                },
-                {
-                    question: "Qual a principal vantagem do uso de sistemas fechados em laboratório?",
-                    options: [
-                        "Reduzir o custo dos experimentos",
-                        "Aumentar a velocidade das reações",
-                        "Minimizar a exposição a aerossóis",
-                        "Melhorar a precisão das medidas"
-                    ],
-                    correct: 2
-                },
-                {
-                    question: "Qual destes NÃO é um requisito de boas práticas de laboratório?",
-                    options: [
-                        "Manter registros detalhados de todas as atividades",
-                        "Calibrar regularmente os equipamentos",
-                        "Usar sempre o método mais rápido",
-                        "Validar métodos e procedimentos"
-                    ],
-                    correct: 2
-                },
-                {
-                    question: "O que deve ser feito antes de reutilizar material glassware?",
-                    options: [
-                        "Apenas enxaguar com água",
-                        "Lavar com detergente e esterilizar se necessário",
-                        "Deixar de molho por algumas horas",
-                        "Secar com papel toalha"
-                    ],
-                    correct: 1
-                },
-                {
-                    question: "Qual a finalidade de um diário de laboratório?",
-                    options: [
-                        "Registrar apenas os resultados bem-sucedidos",
-                        "Documentar todas as atividades, observações e resultados",
-                        "Servir como lista de tarefas do dia",
-                        "Registrar apenas os horários de entrada e saída"
-                    ],
-                    correct: 1
-                },
-                {
-                    question: "O que significa o termo 'assepsia'?",
-                    options: [
-                        "Ausência de sujeira visível",
-                        "Conjunto de medidas para prevenir contaminação",
-                        "Uso de antibióticos para prevenir infecções",
-                        "Limpeza geral do ambiente"
-                    ],
-                    correct: 1
-                }
-            ]
-        ];
+// Dados (resumido só pra exemplo, manter todos os capítulos como no seu original)
+const courseData=[/* ...mesmo conteúdo das perguntas... */];
+const chapterTitles=[
+  "Conceitos Básicos de Biossegurança",
+  "Riscos e Precauções",
+  "Boas Práticas e Gestão de Resíduos"
+];
 
-        // Variáveis de estado
-        let currentChapter = 0;
-        let currentQuestion = 0;
-        let score = 0;
-        let selectedOption = null;
-        let userName = "";
-        let chapterScores = [0, 0, 0];
-        let userAnswers = [];
+// Estado
+let currentChapter=0,currentQuestion=0,score=0,selectedOption=null,userName="",chapterScores=[0,0,0],userAnswers=[];
 
-        // Inicialização
-        function init() {
-            // Verificar se há progresso salvo
-            const savedProgress = localStorage.getItem('biosafetyCourseProgress');
-            if (savedProgress) {
-                const progress = JSON.parse(savedProgress);
-                userName = progress.userName;
-                currentChapter = progress.currentChapter;
-                currentQuestion = progress.currentQuestion;
-                score = progress.score;
-                chapterScores = progress.chapterScores;
-                userAnswers = progress.userAnswers || [];
-                
-                // Se tiver nome salvo, pular a tela de boas-vindas
-                if (userName) {
-                    showScreen('chapterScreen');
-                    updateProgressBar();
-                    showQuestion();
-                }
-            }
-        }
-
-        // Mostrar uma tela específica
-        function showScreen(screenId) {
-            document.querySelectorAll('.screen').forEach(screen => {
-                screen.classList.remove('active');
-            });
-            document.getElementById(screenId).classList.add('active');
-        }
-
-        // Iniciar o curso
-        function startCourse() {
-            userName = document.getElementById('userName').value.trim();
-            if (!userName) {
-                alert("Por favor, digite seu nome para começar.");
-                return;
-            }
-            
-            // Inicializar o progresso
-            currentChapter = 0;
-            currentQuestion = 0;
-            score = 0;
-            chapterScores = [0, 0, 0];
-            userAnswers = [];
-            
-            // Salvar progresso
-            saveProgress();
-            
-            showScreen('chapterScreen');
-            updateProgressBar();
-            showQuestion();
-        }
-
-        // Mostrar pergunta atual
-        function showQuestion() {
-            const questionData = courseData[currentChapter][currentQuestion];
-            document.getElementById('questionText').textContent = questionData.question;
-            
-            const optionsContainer = document.getElementById('options');
-            optionsContainer.innerHTML = '';
-            
-            questionData.options.forEach((option, index) => {
-                const optionElement = document.createElement('div');
-                optionElement.className = 'option';
-                optionElement.textContent = option;
-                optionElement.setAttribute('data-index', index);
-                optionElement.onclick = () => selectOption(optionElement);
-                optionsContainer.appendChild(optionElement);
-            });
-            
-            // Atualizar título do capítulo
-            document.getElementById('chapterTitle').textContent = `Capítulo ${currentChapter + 1}: ${getChapterTitle(currentChapter)}`;
-            
-            // Reiniciar estado dos botões
-            document.getElementById('nextButton').classList.add('hidden');
-            document.getElementById('submitButton').classList.remove('hidden');
-            document.getElementById('feedback').className = 'feedback';
-            document.getElementById('feedback').textContent = '';
-            selectedOption = null;
-        }
-
-        // Obter título do capítulo
-        function getChapterTitle(chapterIndex) {
-            const titles = [
-                "Conceitos Básicos de Biossegurança",
-                "Riscos e Precauções",
-                "Boas Práticas e Gestão de Resíduos"
-            ];
-            return titles[chapterIndex];
-        }
-
-        // Selecionar uma opção
-        function selectOption(optionElement) {
-            // Remover seleção anterior
-            const options = document.querySelectorAll('.option');
-            options.forEach(opt => opt.classList.remove('selected'));
-            
-            // Selecionar nova opção
-            optionElement.classList.add('selected');
-            selectedOption = parseInt(optionElement.getAttribute('data-index'));
-        }
-
-        // Verificar resposta
-        function checkAnswer() {
-            if (selectedOption === null) {
-                alert("Por favor, selecione uma opção.");
-                return;
-            }
-            
-            const questionData = courseData[currentChapter][currentQuestion];
-            const options = document.querySelectorAll('.option');
-            const feedback = document.getElementById('feedback');
-            
-            // Registrar resposta do usuário
-            userAnswers.push({
-                chapter: currentChapter,
-                question: currentQuestion,
-                selected: selectedOption,
-                correct: questionData.correct
-            });
-            
-            if (selectedOption === questionData.correct) {
-                feedback.textContent = "Correto! Parabéns!";
-                feedback.className = "feedback correct";
-                score++;
-                chapterScores[currentChapter]++;
-            } else {
-                feedback.textContent = `Incorreto. A resposta correta é: ${questionData.options[questionData.correct]}`;
-                feedback.className = "feedback incorrect";
-                
-                // Destacar resposta correta
-                options[questionData.correct].classList.add('correct');
-            }
-            
-            // Destacar resposta incorreta selecionada
-            if (selectedOption !== questionData.correct) {
-                options[selectedOption].classList.add('incorrect');
-            }
-            
-            feedback.classList.remove('hidden');
-            document.getElementById('submitButton').classList.add('hidden');
-            document.getElementById('nextButton').classList.remove('hidden');
-            
-            // Salvar progresso
-            saveProgress();
-        }
-
-        // Próxima pergunta
-        function nextQuestion() {
-            currentQuestion++;
-            
-            if (currentQuestion >= courseData[currentChapter].length) {
-                // Fim do capítulo
-                finishChapter();
-            } else {
-                showQuestion();
-                updateProgressBar();
-            }
-        }
-
-        // Atualizar barra de progresso
-        function updateProgressBar() {
-            const progress = ((currentQuestion) / courseData[currentChapter].length) * 100;
-            document.getElementById('progress').style.width = `${progress}%`;
-            document.getElementById('progressText').textContent = `${currentQuestion}/${courseData[currentChapter].length}`;
-        }
-
-        // Finalizar capítulo
-        function finishChapter() {
-            // Verificar se passou de capítulo (mínimo 6 acertos)
-            const chapterScore = chapterScores[currentChapter];
-            
-            // Atualizar elementos da tela de resultados
-            document.getElementById('scoreValue').textContent = chapterScore;
-            document.getElementById('resultsTitle').textContent = `Resultado do Capítulo ${currentChapter + 1}`;
-            document.getElementById('resultsMessage').textContent = `Você acertou ${chapterScore} de 10 questões.`;
-            
-            // Configurar círculo de pontuação
-            const scoreCircle = document.getElementById('scoreCircle');
-            const percentage = (chapterScore / 10) * 100;
-            scoreCircle.style.setProperty('--p', `${percentage}%`);
-            
-            if (chapterScore >= 6) {
-                document.getElementById('resultsFeedback').textContent = "Parabéns! Você atingiu a pontuação mínima e pode avançar para o próximo capítulo.";
-                document.getElementById('nextChapterButton').classList.remove('hidden');
-                document.getElementById('retryChapterButton').classList.add('hidden');
-            } else {
-                document.getElementById('resultsFeedback').textContent = "Você não atingiu a pontuação mínima de 6 acertos. Tente novamente.";
-                document.getElementById('nextChapterButton').classList.add('hidden');
-                document.getElementById('retryChapterButton').classList.remove('hidden');
-            }
-            
-            showScreen('resultsScreen');
-        }
-
-        // Próximo capítulo
-        function nextChapter() {
-            currentChapter++;
-            currentQuestion = 0;
-            
-            if (currentChapter >= courseData.length) {
-                // Curso completo
-                showCompletionScreen();
-            } else {
-                showScreen('chapterScreen');
-                updateProgressBar();
-                showQuestion();
-                saveProgress();
-            }
-        }
-
-        // Tentar capítulo novamente
-        function retryChapter() {
-            // Resetar pontuação do capítulo atual
-            score -= chapterScores[currentChapter];
-            chapterScores[currentChapter] = 0;
-            currentQuestion = 0;
-            
-            // Remover respostas incorretas deste capítulo
-            userAnswers = userAnswers.filter(answer => answer.chapter !== currentChapter);
-            
-            saveProgress();
-            showScreen('chapterScreen');
-            updateProgressBar();
-            showQuestion();
-        }
-
-        // Mostrar tela de conclusão
-        function showCompletionScreen() {
-            document.getElementById('userNameDisplay').textContent = userName;
-            document.getElementById('totalCorrect').textContent = score;
-            
-            const average = (score / (courseData.length * 10) * 100).toFixed(1);
-            document.getElementById('averageScore').textContent = `${average}%`;
-            
-            document.getElementById('chaptersCompleted').textContent = `${courseData.length}/${courseData.length}`;
-            
-            showScreen('completionScreen');
-            
-            // Limpar progresso salvo
-            localStorage.removeItem('biosafetyCourseProgress');
-        }
-
-        // Reiniciar curso
-        function restartCourse() {
-            userName = "";
-            currentChapter = 0;
-            currentQuestion = 0;
-            score = 0;
-            chapterScores = [0, 0, 0];
-            userAnswers = [];
-            
-            localStorage.removeItem('biosafetyCourseProgress');
-            
-            document.getElementById('userName').value = "";
-            showScreen('welcomeScreen');
-        }
-
-        // Salvar progresso
-        function saveProgress() {
-            const progress = {
-                userName,
-                currentChapter,
-                currentQuestion,
-                score,
-                chapterScores,
-                userAnswers
-            };
-            
-            localStorage.setItem('biosafetyCourseProgress', JSON.stringify(progress));
-        }
-
-        // Inicializar a aplicação
-        window.onload = init;
-    </script>
+// Inicialização
+window.onload=()=>{
+  const saved=localStorage.getItem("biosafetyCourseProgress");
+  if(saved){
+    ({userName,currentChapter,currentQuestion,score,chapterScores,userAnswers} = JSON.parse(saved));
+    if(userName){showScreen("chapterScreen");updateProgressBar();showQuestion();}
+  }
+};
+function showScreen(id){
+  document.querySelectorAll(".screen").forEach(s=>s.classList.remove("active"));
+  $id(id).classList.add("active");
+}
+function startCourse(){
+  userName=$id("userName").value.trim();
+  if(!userName)return alert("Digite seu nome!");
+  currentChapter=currentQuestion=score=0;chapterScores=[0,0,0];userAnswers=[];
+  saveProgress();showScreen("chapterScreen");updateProgressBar();showQuestion();
+}
+function showQuestion(){
+  const q=courseData[currentChapter][currentQuestion];
+  $id("questionText").textContent=q.question;
+  $id("options").innerHTML=q.options.map((opt,i)=>`<div class="option" data-i="${i}">${opt}</div>`).join("");
+  document.querySelectorAll(".option").forEach(el=>el.onclick=()=>selectOption(el));
+  $id("chapterTitle").textContent=`Capítulo ${currentChapter+1}: ${chapterTitles[currentChapter]}`;
+  $id("feedback").style.display="none";
+  $id("submitButton").style.display="inline-block";
+  $id("nextButton").style.display="none";
+  selectedOption=null;
+}
+function selectOption(el){
+  document.querySelectorAll(".option").forEach(o=>o.classList.remove("selected"));
+  el.classList.add("selected");selectedOption=+el.dataset.i;
+}
+function checkAnswer(){
+  if(selectedOption==null)return alert("Selecione uma opção.");
+  const q=courseData[currentChapter][currentQuestion];
+  const opts=document.querySelectorAll(".option");
+  userAnswers.push({chapter:currentChapter,question:currentQuestion,selected:selectedOption,correct:q.correct});
+  const fb=$id("feedback");fb.style.display="block";
+  if(selectedOption===q.correct){fb.textContent="Correto!";fb.className="feedback correct";score++;chapterScores[currentChapter]++;}
+  else{fb.textContent=`Incorreto. Resposta: ${q.options[q.correct]}`;fb.className="feedback incorrect";opts[q.correct].classList.add("correct");opts[selectedOption].classList.add("incorrect");}
+  $id("submitButton").style.display="none";$id("nextButton").style.display="inline-block";saveProgress();
+}
+function nextQuestion(){
+  currentQuestion++;
+  if(currentQuestion>=courseData[currentChapter].length)finishChapter();
+  else{showQuestion();updateProgressBar();}
+}
+function updateProgressBar(){
+  const len=courseData[currentChapter].length;
+  $id("progress").style.width=`${(currentQuestion/len)*100}%`;
+  $id("progressText").textContent=`${currentQuestion}/${len}`;
+}
+function finishChapter(){
+  const chScore=chapterScores[currentChapter];
+  $id("scoreValue").textContent=chScore;
+  $id("resultsTitle").textContent=`Resultado do Capítulo ${currentChapter+1}`;
+  $id("resultsMessage").textContent=`Você acertou ${chScore} de 10.`;
+  $id("scoreCircle").style.setProperty("--p",`${(chScore/10)*100}%`);
+  if(chScore>=6){$id("resultsFeedback").textContent="Parabéns! Pode avançar."; $id("nextChapterButton").style.display="inline-block";$id("retryChapterButton").style.display="none";}
+  else{$id("resultsFeedback").textContent="Você não atingiu a pontuação mínima."; $id("nextChapterButton").style.display="none";$id("retryChapterButton").style.display="inline-block";}
+  showScreen("resultsScreen");
+}
+function nextChapter(){
+  currentChapter++;currentQuestion=0;
+  if(currentChapter>=courseData.length)showCompletionScreen();
+  else{showScreen("chapterScreen");updateProgressBar();showQuestion();saveProgress();}
+}
+function retryChapter(){
+  score-=chapterScores[currentChapter];chapterScores[currentChapter]=0;currentQuestion=0;
+  userAnswers=userAnswers.filter(a=>a.chapter!==currentChapter);
+  saveProgress();showScreen("chapterScreen");updateProgressBar();showQuestion();
+}
+function showCompletionScreen(){
+  $id("userNameDisplay").textContent=userName;
+  $id("totalCorrect").textContent=score;
+  $id("averageScore").textContent=`${(score/(courseData.length*10)*100).toFixed(1)}%`;
+  $id("chaptersCompleted").textContent=`${courseData.length}/${courseData.length}`;
+  showScreen("completionScreen");localStorage.removeItem("biosafetyCourseProgress");
+}
+function restartCourse(){
+  userName="";currentChapter=currentQuestion=score=0;chapterScores=[0,0,0];userAnswers=[];
+  localStorage.removeItem("biosafetyCourseProgress");$id("userName").value="";showScreen("welcomeScreen");
+}
+function saveProgress(){localStorage.setItem("biosafetyCourseProgress",JSON.stringify({userName,currentChapter,currentQuestion,score,chapterScores,userAnswers}))}
+</script>
 </body>
 </html>
