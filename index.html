@@ -1,130 +1,148 @@
-     <!DOCTYPE html>
-<html lang="pt-br">
+<!DOCTYPE html>
+<html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Controle de Proliferação de Mosquitos</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Mosquito Swatter Saga</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/feather-icons"></script>
     <style>
-        body {
-            font-family: sans-serif;
-            margin: 0;
-            padding: 20px;
-            /* Layout Flexível para Responsividade */
-            display: flex;
-            flex-direction: column;
-            align-items: center;
+        /* Custom touch handling for mobile */
+        .mosquito {
+            touch-action: none;
         }
-        #mosquito {
-            width: 50px;
-            cursor: move; /* Indica que o elemento é arrastável */
-            margin-bottom: 30px;
+        
+        /* Wider landing areas with proper spacing */
+        .landing-area {
+            min-width: 120px;
+            margin: 0 20px;
+            flex-grow: 1;
         }
-        .estacao {
-            width: 150px;
-            height: 150px;
-            border: 2px dashed #ccc;
-            margin: 10px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            text-align: center;
-            /* Layout Fluido: Usa porcentagem para largura máxima */
-            max-width: 90%;
-        }
-        .estacao.visitada {
-            border-color: green;
-            background-color: #e0ffe0;
-        }
-        #mensagem {
-            margin-top: 20px;
-            padding: 10px;
-            font-weight: bold;
-            display: none; /* Inicialmente escondida */
-        }
-        /* Consulta de Mídia para Telas Menores (Mobile) */
-        @media (max-width: 768px) {
-            .estacao {
-                width: 100px;
-                height: 100px;
-                font-size: 0.8em;
-            }
-            #mosquito {
-                width: 40px;
-            }
+        
+        /* Container for landing areas */
+        .landing-container {
+            justify-content: space-between;
+            padding: 0 10px;
+            margin-top: 30px;
         }
     </style>
 </head>
-<body>
-    <h1>Evite a Proliferação</h1>
-    <p>Arraste o mosquito para longe das áreas de risco!</p>
+<body class="bg-gray-100 min-h-screen flex flex-col items-center p-4">
+    <header class="w-full max-w-4xl mb-8">
+        <h1 class="text-3xl md:text-4xl font-bold text-center text-gray-800">Mosquito Swatter Saga</h1>
+        <p class="text-center text-gray-600 mt-2">Swipe the mosquito to its landing spot!</p>
+    </header>
 
-    <!-- O mosquito arrastável -->
-    <img src="https://static.vecteezy.com/system/resources/thumbnails/024/077/679/small_2x/bloodsucker-mosquito-isolated-on-transparent-background-file-png.png" id="mosquito" draggable="true">
+    <div class="relative w-full max-w-4xl h-64 bg-gray-200 rounded-lg mb-8 overflow-hidden flex items-center justify-center">
+        <img id="mosquito" src="http://static.photos/nature/200x200/42" alt="Mosquito" 
+             class="mosquito absolute w-16 h-16 cursor-grab active:cursor-grabbing rounded-full shadow-lg border-2 border-white"
+             draggable="false">
+    </div>
 
-    <!-- As 5 estações de proliferação -->
-    <div class="estacao" id="estacao1">Água Parada</div>
-    <div class="estacao" id="estacao2">Lixo</div>
-    <div class="estacao" id="estacao3">Pneu Velho</div>
-    <div class="estacao" id="estacao4">Vaso de Planta</div>
-    <div class="estacao" id="estacao5">Calha Suja</div>
+    <div class="landing-container w-full max-w-4xl flex flex-wrap">
+        <div class="landing-area bg-green-100 h-32 rounded-lg flex items-center justify-center mb-4">
+            <span class="text-gray-700">Landing Spot 1</span>
+        </div>
+        <div class="landing-area bg-blue-100 h-32 rounded-lg flex items-center justify-center mb-4">
+            <span class="text-gray-700">Landing Spot 2</span>
+        </div>
+        <div class="landing-area bg-yellow-100 h-32 rounded-lg flex items-center justify-center mb-4">
+            <span class="text-gray-700">Landing Spot 3</span>
+        </div>
+        <div class="landing-area bg-purple-100 h-32 rounded-lg flex items-center justify-center mb-4">
+            <span class="text-gray-700">Landing Spot 4</span>
+        </div>
+    </div>
 
-    <!-- Mensagem final -->
-    <div id="mensagem"></div>
+    <div class="mt-8 text-center">
+        <button id="resetBtn" class="px-6 py-2 bg-red-500 text-white rounded-lg shadow hover:bg-red-600 transition">
+            Reset Mosquito
+        </button>
+    </div>
 
     <script>
-        // Inicialização
-        const mosquito = document.getElementById('mosquito');
-        const estacoes = document.querySelectorAll('.estacao');
-        const mensagemFinal = document.getElementById('mensagem');
-        const estacoesVisitadas = new Set(); // Para armazenar quais estações já foram ativadas
-        let novomosquitoCriado = false; // Impede multiplas criações por estação
-
-        // Configura os dados do drag para o mosquito
-        mosquito.addEventListener('dragstart', (ev) => {
-            ev.dataTransfer.setData('text/plain', ev.target.id);
-            ev.dataTransfer.effectAllowed = 'move';
-        });
-
-        // Configura todas as estações como zonas de drop
-        estacoes.forEach(estacao => {
-            // Permite o drop
-            estacao.addEventListener('dragover', (ev) => {
-                ev.preventDefault();
-                ev.dataTransfer.dropEffect = 'move';
-            });
-
-            // Lógica quando o mosquito é solto na estação
-            estacao.addEventListener('drop', (ev) => {
-                ev.preventDefault();
-                const data = ev.dataTransfer.getData('text/plain');
-                const draggedElement = document.getElementById(data);
-
-                // Verifica se o elemento arrastado é o mosquito
-                if (draggedElement.id === 'mosquito' && !novomosquitoCriado) {
-                    novomosquitoCriado = true; // Bloqueia criação de novos mosquitos por um tempo
-
-                    // Marca a estação como visitada
-                    estacao.classList.add('visitada');
-                    estacoesVisitadas.add(estacao.id);
-
-                    // Cria um NOVO mosquito na estação
-                    const novoMosquito = document.createElement('img');
-                    novoMosquito.src = 'mosquito.png';
-                    novoMosquito.style.width = '30px'; // Um pouco menor que o original
-                    estacao.appendChild(novoMosquito);
-
-                    // Verifica se todas as estações foram visitadas
-                    if (estacoesVisitadas.size === estacoes.length) {
-                        mensagemFinal.textContent = "ALERTA: O vetor se proliferou!";
-                        mensagemFinal.style.display = 'block';
-                        mensagemFinal.style.color = 'red';
-                    }
-
-                    // Reseta a flag após um pequeno delay
-                    setTimeout(() => { novomosquitoCriado = false; }, 500);
+        document.addEventListener('DOMContentLoaded', function() {
+            const mosquito = document.getElementById('mosquito');
+            const resetBtn = document.getElementById('resetBtn');
+            
+            let isDragging = false;
+            let startX, startY, initialX = 0, initialY = 0;
+            
+            // Store original position for reset
+            const originalRect = mosquito.getBoundingClientRect();
+            const originalX = originalRect.left;
+            const originalY = originalRect.top;
+            
+            // Mouse/Touch down
+            function startDrag(e) {
+                isDragging = true;
+                
+                if (e.type === 'mousedown') {
+                    startX = e.clientX;
+                    startY = e.clientY;
+                } else if (e.type === 'touchstart') {
+                    startX = e.touches[0].clientX;
+                    startY = e.touches[0].clientY;
                 }
-            });
+                
+                initialX = mosquito.offsetLeft;
+                initialY = mosquito.offsetTop;
+                
+                mosquito.style.transition = 'none';
+                mosquito.classList.add('shadow-xl');
+                mosquito.style.zIndex = '10';
+            }
+            
+            // Mouse/Touch move
+            function drag(e) {
+                if (!isDragging) return;
+                
+                let currentX, currentY;
+                
+                if (e.type === 'mousemove') {
+                    currentX = e.clientX;
+                    currentY = e.clientY;
+                } else if (e.type === 'touchmove') {
+                    currentX = e.touches[0].clientX;
+                    currentY = e.touches[0].clientY;
+                    e.preventDefault(); // Prevent scrolling
+                }
+                
+                const dx = currentX - startX;
+                const dy = currentY - startY;
+                
+                mosquito.style.left = `${initialX + dx}px`;
+                mosquito.style.top = `${initialY + dy}px`;
+            }
+            
+            // Mouse/Touch up
+            function endDrag() {
+                isDragging = false;
+                mosquito.style.transition = 'left 0.3s, top 0.3s';
+                mosquito.classList.remove('shadow-xl');
+                mosquito.style.zIndex = '1';
+            }
+            
+            // Reset position
+            function resetMosquito() {
+                mosquito.style.left = '0px';
+                mosquito.style.top = '0px';
+            }
+            
+            // Event listeners for mouse
+            mosquito.addEventListener('mousedown', startDrag);
+            document.addEventListener('mousemove', drag);
+            document.addEventListener('mouseup', endDrag);
+            
+            // Event listeners for touch
+            mosquito.addEventListener('touchstart', startDrag, { passive: false });
+            document.addEventListener('touchmove', drag, { passive: false });
+            document.addEventListener('touchend', endDrag);
+            
+            // Reset button
+            resetBtn.addEventListener('click', resetMosquito);
         });
     </script>
+    <script>feather.replace();</script>
 </body>
 </html>
