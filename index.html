@@ -1,62 +1,115 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Mosquito Swatter Saga</title>
+    <title>A Saga do Mosquito</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/feather-icons"></script>
     <style>
-        /* Custom touch handling for mobile */
         .mosquito {
             touch-action: none;
+            user-select: none;
+            z-index: 50; /* Garante que o mosquito fique acima de tudo */
         }
         
-        /* Wider landing areas with proper spacing */
         .landing-area {
             min-width: 120px;
-            margin: 0 20px;
+            margin: 0 10px;
             flex-grow: 1;
+            position: relative;
+            overflow: visible; /* Mudado de hidden para visible */
+            z-index: 10; /* Menor que o mosquito */
         }
         
-        /* Container for landing areas */
         .landing-container {
             justify-content: space-between;
             padding: 0 10px;
             margin-top: 30px;
+            display: flex;
+            flex-wrap: wrap;
+            position: relative;
+            z-index: 10;
+        }
+        
+        .alert {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 15px 25px;
+            border-radius: 8px;
+            color: white;
+            font-weight: bold;
+            z-index: 100;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        
+        .success {
+            background-color: #10B981;
+        }
+        
+        .danger {
+            background-color: #EF4444;
+        }
+
+        /* Container principal onde o mosquito pode se mover */
+        .game-container {
+            position: relative;
+            width: 100%;
+            max-width: 4xl;
+            height: 64vh; /* Usando altura da viewport */
+            background-color: #e5e7eb; /* bg-gray-200 */
+            border-radius: 0.5rem;
+            margin-bottom: 2rem;
+            overflow: visible; /* Permite que o mosquito saia se necessário */
+            z-index: 20;
         }
     </style>
 </head>
 <body class="bg-gray-100 min-h-screen flex flex-col items-center p-4">
+    <div id="successAlert" class="alert success">✅ Foco eliminado! Área limpa!</div>
+    <div id="dangerAlert" class="alert danger">❌ Mosquito se proliferou! Cuidado!</div>
+
     <header class="w-full max-w-4xl mb-8">
-        <h1 class="text-3xl md:text-4xl font-bold text-center text-gray-800">Mosquito Swatter Saga</h1>
-        <p class="text-center text-gray-600 mt-2">Swipe the mosquito to its landing spot!</p>
+        <h1 class="text-3xl md:text-4xl font-bold text-center text-gray-800">A Saga do Mosquito</h1>
+        <p class="text-center text-gray-600 mt-2">Arraste o mosquito para os pontos de pouso!</p>
     </header>
 
-    <div class="relative w-full max-w-4xl h-64 bg-gray-200 rounded-lg mb-8 overflow-hidden flex items-center justify-center">
+    <!-- Container do jogo com fundo escuro -->
+    <div class="game-container">
         <img id="mosquito" src="http://static.photos/nature/200x200/42" alt="Mosquito" 
              class="mosquito absolute w-16 h-16 cursor-grab active:cursor-grabbing rounded-full shadow-lg border-2 border-white"
-             draggable="false">
+             draggable="false"
+             style="left: 50%; top: 50%; transform: translate(-50%, -50%);">
     </div>
 
-    <div class="landing-container w-full max-w-4xl flex flex-wrap">
-        <div class="landing-area bg-green-100 h-32 rounded-lg flex items-center justify-center mb-4">
-            <span class="text-gray-700">Landing Spot 1</span>
+    <!-- Áreas de pouso com fundo mais claro -->
+    <div class="landing-container w-full max-w-4xl">
+        <div class="landing-area bg-green-100 h-32 rounded-lg flex items-center justify-center mb-4" data-type="success">
+            <span class="text-gray-700">Ponto Seguro 1</span>
         </div>
-        <div class="landing-area bg-blue-100 h-32 rounded-lg flex items-center justify-center mb-4">
-            <span class="text-gray-700">Landing Spot 2</span>
+        <div class="landing-area bg-red-100 h-32 rounded-lg flex items-center justify-center mb-4" data-type="danger">
+            <span class="text-gray-700">Ponto de Risco 1</span>
         </div>
-        <div class="landing-area bg-yellow-100 h-32 rounded-lg flex items-center justify-center mb-4">
-            <span class="text-gray-700">Landing Spot 3</span>
+        <div class="landing-area bg-green-100 h-32 rounded-lg flex items-center justify-center mb-4" data-type="success">
+            <span class="text-gray-700">Ponto Seguro 2</span>
         </div>
-        <div class="landing-area bg-purple-100 h-32 rounded-lg flex items-center justify-center mb-4">
-            <span class="text-gray-700">Landing Spot 4</span>
+        <div class="landing-area bg-red-100 h-32 rounded-lg flex items-center justify-center mb-4" data-type="danger">
+            <span class="text-gray-700">Ponto de Risco 2</span>
+        </div>
+        <div class="landing-area bg-green-100 h-32 rounded-lg flex items-center justify-center mb-4" data-type="success">
+            <span class="text-gray-700">Ponto Seguro 3</span>
+        </div>
+        <div class="landing-area bg-red-100 h-32 rounded-lg flex items-center justify-center mb-4" data-type="danger">
+            <span class="text-gray-700">Ponto de Risco 3</span>
         </div>
     </div>
 
     <div class="mt-8 text-center">
         <button id="resetBtn" class="px-6 py-2 bg-red-500 text-white rounded-lg shadow hover:bg-red-600 transition">
-            Reset Mosquito
+            Reiniciar Mosquito
         </button>
     </div>
 
@@ -64,14 +117,18 @@
         document.addEventListener('DOMContentLoaded', function() {
             const mosquito = document.getElementById('mosquito');
             const resetBtn = document.getElementById('resetBtn');
+            const successAlert = document.getElementById('successAlert');
+            const dangerAlert = document.getElementById('dangerAlert');
+            const landingAreas = document.querySelectorAll('.landing-area');
+            const gameContainer = document.querySelector('.game-container');
             
             let isDragging = false;
             let startX, startY, initialX = 0, initialY = 0;
             
-            // Store original position for reset
-            const originalRect = mosquito.getBoundingClientRect();
-            const originalX = originalRect.left;
-            const originalY = originalRect.top;
+            // Posição original para reset (centro do container)
+            const containerRect = gameContainer.getBoundingClientRect();
+            const initialLeft = containerRect.width / 2 - mosquito.offsetWidth / 2;
+            const initialTop = containerRect.height / 2 - mosquito.offsetHeight / 2;
             
             // Mouse/Touch down
             function startDrag(e) {
@@ -85,12 +142,16 @@
                     startY = e.touches[0].clientY;
                 }
                 
-                initialX = mosquito.offsetLeft;
-                initialY = mosquito.offsetTop;
+                // Pega a posição atual do mosquito
+                const currentLeft = parseInt(mosquito.style.left) || initialLeft;
+                const currentTop = parseInt(mosquito.style.top) || initialTop;
+                
+                initialX = currentLeft;
+                initialY = currentTop;
                 
                 mosquito.style.transition = 'none';
                 mosquito.classList.add('shadow-xl');
-                mosquito.style.zIndex = '10';
+                mosquito.style.zIndex = '100'; // Z-index muito alto durante o arrasto
             }
             
             // Mouse/Touch move
@@ -105,42 +166,83 @@
                 } else if (e.type === 'touchmove') {
                     currentX = e.touches[0].clientX;
                     currentY = e.touches[0].clientY;
-                    e.preventDefault(); // Prevent scrolling
+                    e.preventDefault();
                 }
                 
                 const dx = currentX - startX;
                 const dy = currentY - startY;
                 
-                mosquito.style.left = `${initialX + dx}px`;
-                mosquito.style.top = `${initialY + dy}px`;
+                // Calcula nova posição
+                const newX = initialX + dx;
+                const newY = initialY + dy;
+                
+                // Atualiza a posição
+                mosquito.style.left = `${newX}px`;
+                mosquito.style.top = `${newY}px`;
             }
             
-            // Mouse/Touch up
+            // Mouse/Touch up - verifica se soltou em uma área
             function endDrag() {
+                if (!isDragging) return;
                 isDragging = false;
+                
                 mosquito.style.transition = 'left 0.3s, top 0.3s';
                 mosquito.classList.remove('shadow-xl');
-                mosquito.style.zIndex = '1';
+                mosquito.style.zIndex = '50'; // Volta para o z-index normal
+                
+                // Verifica se soltou em alguma área
+                const mosquitoRect = mosquito.getBoundingClientRect();
+                let droppedOnArea = false;
+                
+                landingAreas.forEach(area => {
+                    const areaRect = area.getBoundingClientRect();
+                    
+                    // Verifica colisão
+                    if (
+                        mosquitoRect.left < areaRect.right &&
+                        mosquitoRect.right > areaRect.left &&
+                        mosquitoRect.top < areaRect.bottom &&
+                        mosquitoRect.bottom > areaRect.top
+                    ) {
+                        droppedOnArea = true;
+                        
+                        if (area.dataset.type === 'success') {
+                            showAlert(successAlert);
+                        } else {
+                            showAlert(dangerAlert);
+                        }
+                    }
+                });
+                
+                if (!droppedOnArea) {
+                    resetMosquitoPosition();
+                }
             }
             
-            // Reset position
-            function resetMosquito() {
-                mosquito.style.left = '0px';
-                mosquito.style.top = '0px';
+            function showAlert(alertElement) {
+                alertElement.style.opacity = '1';
+                setTimeout(() => {
+                    alertElement.style.opacity = '0';
+                }, 2000);
             }
             
-            // Event listeners for mouse
+            function resetMosquitoPosition() {
+                mosquito.style.left = `${initialLeft}px`;
+                mosquito.style.top = `${initialTop}px`;
+            }
+            
+            // Event listeners para mouse
             mosquito.addEventListener('mousedown', startDrag);
             document.addEventListener('mousemove', drag);
             document.addEventListener('mouseup', endDrag);
             
-            // Event listeners for touch
+            // Event listeners para touch
             mosquito.addEventListener('touchstart', startDrag, { passive: false });
             document.addEventListener('touchmove', drag, { passive: false });
             document.addEventListener('touchend', endDrag);
             
-            // Reset button
-            resetBtn.addEventListener('click', resetMosquito);
+            // Botão reset
+            resetBtn.addEventListener('click', resetMosquitoPosition);
         });
     </script>
     <script>feather.replace();</script>
