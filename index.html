@@ -7,6 +7,15 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/feather-icons"></script>
     <style>
+        * {
+            -webkit-tap-highlight-color: transparent;
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+        }
+        
         .mosquito {
             touch-action: none;
             user-select: none;
@@ -52,6 +61,9 @@
             z-index: 100;
             opacity: 0;
             transition: opacity 0.3s;
+            width: 90%;
+            max-width: 300px;
+            text-align: center;
         }
         
         .success {
@@ -65,13 +77,14 @@
         .game-container {
             position: relative;
             width: 100%;
-            max-width: 4xl;
-            height: 64vh;
+            max-width: 100%;
+            height: 50vh;
             background-color: #e5e7eb;
             border-radius: 0.5rem;
             margin-bottom: 2rem;
             overflow: visible;
             z-index: 20;
+            touch-action: pan-y;
         }
 
         .game-over {
@@ -87,10 +100,38 @@
             align-items: center;
             z-index: 1000;
             color: white;
+            padding: 20px;
+            text-align: center;
         }
 
         .hidden {
             display: none;
+        }
+        
+        /* Melhorias para mobile */
+        @media (max-width: 768px) {
+            .landing-container {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .landing-area {
+                width: 90%;
+                margin-bottom: 15px;
+                min-width: unset;
+            }
+            
+            .game-container {
+                height: 40vh;
+            }
+            
+            header h1 {
+                font-size: 1.8rem;
+            }
+            
+            header p {
+                font-size: 0.9rem;
+            }
         }
     </style>
 </head>
@@ -100,52 +141,52 @@
 
     <!-- Tela de Game Over -->
     <div id="gameOver" class="game-over hidden">
-        <h2 id="gameOverMessage" class="text-4xl font-bold mb-4"></h2>
+        <h2 id="gameOverMessage" class="text-3xl md:text-4xl font-bold mb-4"></h2>
         <button id="restartBtn" class="px-6 py-3 bg-green-500 text-white rounded-lg text-xl mt-4">
             Jogar Novamente
         </button>
     </div>
 
-    <header class="w-full max-w-4xl mb-8">
-        <h1 class="text-3xl md:text-4xl font-bold text-center text-gray-800">A Saga do Mosquito</h1>
-        <p class="text-center text-gray-600 mt-2">Arraste o mosquito para os pontos de pouso!</p>
-        <div class="text-center mt-4">
-            <span class="text-lg font-semibold">Mosquitos no spawn: <span id="mosquitoCount">0</span>/6</span>
+    <header class="w-full max-w-4xl mb-4 md:mb-8">
+        <h1 class="text-2xl md:text-4xl font-bold text-center text-gray-800">A Saga do Mosquito</h1>
+        <p class="text-center text-gray-600 mt-2 text-sm md:text-base">Arraste o mosquito para os pontos de pouso!</p>
+        <div class="text-center mt-2 md:mt-4">
+            <span class="text-base md:text-lg font-semibold">Mosquitos no spawn: <span id="mosquitoCount">0</span>/6</span>
         </div>
     </header>
 
-    <!-- Container do jogo (agora também é a área de spawn) -->
+    <!-- Container do jogo (área de spawn) -->
     <div class="game-container" id="gameContainer">
         <img id="mosquito" src="https://png.pngtree.com/png-clipart/20240418/original/pngtree-aedes-aegypti-mosquito-png-image_14878795.png" alt="Mosquito" 
-             class="mosquito absolute w-16 h-16 cursor-grab active:cursor-grabbing"
+             class="mosquito absolute w-12 h-12 md:w-16 md:h-16 cursor-grab active:cursor-grabbing"
              draggable="false"
              style="left: 50%; top: 50%; transform: translate(-50%, -50%);">
     </div>
 
     <!-- Áreas de pouso -->
     <div class="landing-container w-full max-w-4xl">
-        <div class="landing-area bg-green-100 h-32 rounded-lg flex items-center justify-center mb-4" data-type="success">
-            <span class="text-gray-700">Ponto Seguro 1</span>
+        <div class="landing-area bg-green-100 h-24 md:h-32 rounded-lg flex items-center justify-center mb-4" data-type="success">
+            <span class="text-gray-700 text-sm md:text-base">Ponto Seguro 1</span>
         </div>
-        <div class="landing-area bg-red-100 h-32 rounded-lg flex items-center justify-center mb-4" data-type="danger">
-            <span class="text-gray-700">Ponto de Risco 1</span>
+        <div class="landing-area bg-red-100 h-24 md:h-32 rounded-lg flex items-center justify-center mb-4" data-type="danger">
+            <span class="text-gray-700 text-sm md:text-base">Ponto de Risco 1</span>
         </div>
-        <div class="landing-area bg-green-100 h-32 rounded-lg flex items-center justify-center mb-4" data-type="success">
-            <span class="text-gray-700">Ponto Seguro 2</span>
+        <div class="landing-area bg-green-100 h-24 md:h-32 rounded-lg flex items-center justify-center mb-4" data-type="success">
+            <span class="text-gray-700 text-sm md:text-base">Ponto Seguro 2</span>
         </div>
-        <div class="landing-area bg-red-100 h-32 rounded-lg flex items-center justify-center mb-4" data-type="danger">
-            <span class="text-gray-700">Ponto de Risco 2</span>
+        <div class="landing-area bg-red-100 h-24 md:h-32 rounded-lg flex items-center justify-center mb-4" data-type="danger">
+            <span class="text-gray-700 text-sm md:text-base">Ponto de Risco 2</span>
         </div>
-        <div class="landing-area bg-green-100 h-32 rounded-lg flex items-center justify-center mb-4" data-type="success">
-            <span class="text-gray-700">Ponto Seguro 3</span>
+        <div class="landing-area bg-green-100 h-24 md:h-32 rounded-lg flex items-center justify-center mb-4" data-type="success">
+            <span class="text-gray-700 text-sm md:text-base">Ponto Seguro 3</span>
         </div>
-        <div class="landing-area bg-red-100 h-32 rounded-lg flex items-center justify-center mb-4" data-type="danger">
-            <span class="text-gray-700">Ponto de Risco 3</span>
+        <div class="landing-area bg-red-100 h-24 md:h-32 rounded-lg flex items-center justify-center mb-4" data-type="danger">
+            <span class="text-gray-700 text-sm md:text-base">Ponto de Risco 3</span>
         </div>
     </div>
 
-    <div class="mt-8 text-center">
-        <button id="resetBtn" class="px-6 py-2 bg-red-500 text-white rounded-lg shadow hover:bg-red-600 transition">
+    <div class="mt-6 md:mt-8 text-center">
+        <button id="resetBtn" class="px-6 py-2 bg-red-500 text-white rounded-lg shadow hover:bg-red-600 transition text-sm md:text-base">
             Reiniciar Mosquito
         </button>
     </div>
@@ -167,10 +208,19 @@
             let startX, startY, initialX = 0, initialY = 0;
             let mosquitoCopies = [];
             let scrollInterval = null;
+            let isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+            
+            // Posição inicial do mosquito
+            const containerRect = gameContainer.getBoundingClientRect();
+            const initialLeft = containerRect.width / 2 - mosquito.offsetWidth / 2;
+            const initialTop = containerRect.height / 2 - mosquito.offsetHeight / 2;
             
             // Mouse/Touch down
             function startDrag(e) {
                 isDragging = true;
+                
+                // Prevenir comportamento padrão para evitar scroll indesejado
+                e.preventDefault();
                 
                 if (e.type === 'mousedown') {
                     startX = e.clientX;
@@ -181,8 +231,8 @@
                 }
                 
                 // Pega a posição atual do mosquito
-                const currentLeft = parseInt(mosquito.style.left) || 0;
-                const currentTop = parseInt(mosquito.style.top) || 0;
+                const currentLeft = parseInt(mosquito.style.left) || initialLeft;
+                const currentTop = parseInt(mosquito.style.top) || initialTop;
                 
                 initialX = currentLeft;
                 initialY = currentTop;
@@ -207,7 +257,7 @@
                 } else if (e.type === 'touchmove') {
                     currentX = e.touches[0].clientX;
                     currentY = e.touches[0].clientY;
-                    e.preventDefault();
+                    e.preventDefault(); // Prevenir scroll durante o arrasto
                 }
                 
                 const dx = currentX - startX;
@@ -233,7 +283,7 @@
                     }
                     
                     const mosquitoRect = mosquito.getBoundingClientRect();
-                    const scrollSpeed = 15;
+                    const scrollSpeed = isMobile ? 10 : 15; // Velocidade menor no mobile
                     
                     // Verifica se está perto da borda inferior
                     if (mosquitoRect.bottom > window.innerHeight - 50) {
@@ -284,7 +334,7 @@
                     }
                 });
                 
-                // O mosquito permanece na posição onde foi solto, não resetamos mais
+                // O mosquito permanece na posição onde foi solto, não resetamos
             }
             
             // Lógica para área segura
@@ -337,7 +387,7 @@
             // Encontra uma posição que não sobreponha outros mosquitos
             function findNonOverlappingPosition() {
                 const containerRect = gameContainer.getBoundingClientRect();
-                const mosquitoSize = 48; // 3rem = 48px
+                const mosquitoSize = isMobile ? 40 : 48; // Tamanho menor no mobile
                 const maxAttempts = 50;
                 
                 for (let attempt = 0; attempt < maxAttempts; attempt++) {
@@ -355,8 +405,7 @@
                     
                     // Verifica sobreposição com cópias existentes
                     for (const copy of mosquitoCopies) {
-                        const copyRect = copy.getBoundingClientRect();
-                        const relativeCopyRect = {
+                        const copyRect = {
                             left: copy.offsetLeft,
                             right: copy.offsetLeft + mosquitoSize,
                             top: copy.offsetTop,
@@ -364,10 +413,10 @@
                         };
                         
                         if (
-                            newRect.left < relativeCopyRect.right &&
-                            newRect.right > relativeCopyRect.left &&
-                            newRect.top < relativeCopyRect.bottom &&
-                            newRect.bottom > relativeCopyRect.top
+                            newRect.left < copyRect.right &&
+                            newRect.right > copyRect.left &&
+                            newRect.top < copyRect.bottom &&
+                            newRect.bottom > copyRect.top
                         ) {
                             overlaps = true;
                             break;
@@ -457,16 +506,36 @@
             document.addEventListener('mousemove', drag);
             document.addEventListener('mouseup', endDrag);
             
-            // Event listeners para touch
+            // Event listeners para touch - melhorados para mobile
             mosquito.addEventListener('touchstart', startDrag, { passive: false });
             document.addEventListener('touchmove', drag, { passive: false });
             document.addEventListener('touchend', endDrag);
+            
+            // Prevenir comportamento padrão de gestos para melhor experiência mobile
+            document.addEventListener('gesturestart', function(e) {
+                e.preventDefault();
+            });
+            
+            document.addEventListener('gesturechange', function(e) {
+                e.preventDefault();
+            });
+            
+            document.addEventListener('gestureend', function(e) {
+                e.preventDefault();
+            });
             
             // Botão reset
             resetBtn.addEventListener('click', resetMosquitoPosition);
             
             // Botão restart
             restartBtn.addEventListener('click', restartGame);
+            
+            // Garantir que a página carregue no topo no mobile
+            window.addEventListener('load', function() {
+                setTimeout(function() {
+                    window.scrollTo(0, 0);
+                }, 0);
+            });
         });
     </script>
     <script>feather.replace();</script>
