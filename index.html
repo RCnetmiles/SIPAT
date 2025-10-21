@@ -10,7 +10,15 @@
         .mosquito {
             touch-action: none;
             user-select: none;
-            z-index: 50; /* Garante que o mosquito fique acima de tudo */
+            z-index: 50;
+        }
+        
+        .mosquito-copy {
+            position: absolute;
+            width: 3rem;
+            height: 3rem;
+            z-index: 30;
+            pointer-events: none;
         }
         
         .landing-area {
@@ -18,8 +26,8 @@
             margin: 0 10px;
             flex-grow: 1;
             position: relative;
-            overflow: visible; /* Mudado de hidden para visible */
-            z-index: 10; /* Menor que o mosquito */
+            overflow: visible;
+            z-index: 10;
         }
         
         .landing-container {
@@ -54,17 +62,46 @@
             background-color: #EF4444;
         }
 
-        /* Container principal onde o mosquito pode se mover */
         .game-container {
             position: relative;
             width: 100%;
             max-width: 4xl;
-            height: 64vh; /* Usando altura da viewport */
-            background-color: #e5e7eb; /* bg-gray-200 */
+            height: 64vh;
+            background-color: #e5e7eb;
             border-radius: 0.5rem;
             margin-bottom: 2rem;
-            overflow: visible; /* Permite que o mosquito saia se necessário */
+            overflow: visible;
             z-index: 20;
+        }
+
+        .spawn-area {
+            position: relative;
+            width: 100%;
+            max-width: 4xl;
+            height: 120px;
+            background-color: #d1d5db;
+            border-radius: 0.5rem;
+            margin-bottom: 2rem;
+            border: 2px dashed #9ca3af;
+        }
+
+        .game-over {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.8);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            color: white;
+        }
+
+        .hidden {
+            display: none;
         }
     </style>
 </head>
@@ -72,20 +109,36 @@
     <div id="successAlert" class="alert success">✅ Foco eliminado! Área limpa!</div>
     <div id="dangerAlert" class="alert danger">❌ Mosquito se proliferou! Cuidado!</div>
 
+    <!-- Tela de Game Over -->
+    <div id="gameOver" class="game-over hidden">
+        <h2 id="gameOverMessage" class="text-4xl font-bold mb-4"></h2>
+        <button id="restartBtn" class="px-6 py-3 bg-green-500 text-white rounded-lg text-xl mt-4">
+            Jogar Novamente
+        </button>
+    </div>
+
     <header class="w-full max-w-4xl mb-8">
         <h1 class="text-3xl md:text-4xl font-bold text-center text-gray-800">A Saga do Mosquito</h1>
         <p class="text-center text-gray-600 mt-2">Arraste o mosquito para os pontos de pouso!</p>
+        <div class="text-center mt-4">
+            <span class="text-lg font-semibold">Mosquitos no spawn: <span id="mosquitoCount">0</span>/6</span>
+        </div>
     </header>
 
-    <!-- Container do jogo com fundo escuro -->
+    <!-- Área de Spawn -->
+    <div class="spawn-area w-full max-w-4xl" id="spawnArea">
+        <p class="text-center text-gray-600 pt-4">Área de Spawn</p>
+    </div>
+
+    <!-- Container do jogo -->
     <div class="game-container">
-        <img id="mosquito" src="http://static.photos/nature/200x200/42" alt="Mosquito" 
-             class="mosquito absolute w-16 h-16 cursor-grab active:cursor-grabbing rounded-full shadow-lg border-2 border-white"
+        <img id="mosquito" src="https://cdn-icons-png.flaticon.com/512/2675/2675874.png" alt="Mosquito" 
+             class="mosquito absolute w-16 h-16 cursor-grab active:cursor-grabbing"
              draggable="false"
              style="left: 50%; top: 50%; transform: translate(-50%, -50%);">
     </div>
 
-    <!-- Áreas de pouso com fundo mais claro -->
+    <!-- Áreas de pouso -->
     <div class="landing-container w-full max-w-4xl">
         <div class="landing-area bg-green-100 h-32 rounded-lg flex items-center justify-center mb-4" data-type="success">
             <span class="text-gray-700">Ponto Seguro 1</span>
@@ -117,15 +170,22 @@
         document.addEventListener('DOMContentLoaded', function() {
             const mosquito = document.getElementById('mosquito');
             const resetBtn = document.getElementById('resetBtn');
+            const restartBtn = document.getElementById('restartBtn');
             const successAlert = document.getElementById('successAlert');
             const dangerAlert = document.getElementById('dangerAlert');
             const landingAreas = document.querySelectorAll('.landing-area');
             const gameContainer = document.querySelector('.game-container');
+            const spawnArea = document.getElementById('spawnArea');
+            const mosquitoCount = document.getElementById('mosquitoCount');
+            const gameOver = document.getElementById('gameOver');
+            const gameOverMessage = document.getElementById('gameOverMessage');
             
             let isDragging = false;
             let startX, startY, initialX = 0, initialY = 0;
+            let mosquitoCopies = [];
+            let scrollInterval = null;
             
-            // Posição original para reset (centro do container)
+            // Posição original para reset
             const containerRect = gameContainer.getBoundingClientRect();
             const initialLeft = containerRect.width / 2 - mosquito.offsetWidth / 2;
             const initialTop = containerRect.height / 2 - mosquito.offsetHeight / 2;
@@ -151,7 +211,10 @@
                 
                 mosquito.style.transition = 'none';
                 mosquito.classList.add('shadow-xl');
-                mosquito.style.zIndex = '100'; // Z-index muito alto durante o arrasto
+                mosquito.style.zIndex = '100';
+                
+                // Inicia verificação de scroll automático
+                startAutoScroll();
             }
             
             // Mouse/Touch move
@@ -181,14 +244,43 @@
                 mosquito.style.top = `${newY}px`;
             }
             
+            // Scroll automático quando o mosquito chega perto das bordas
+            function startAutoScroll() {
+                if (scrollInterval) clearInterval(scrollInterval);
+                
+                scrollInterval = setInterval(() => {
+                    if (!isDragging) {
+                        clearInterval(scrollInterval);
+                        return;
+                    }
+                    
+                    const mosquitoRect = mosquito.getBoundingClientRect();
+                    const scrollSpeed = 15;
+                    
+                    // Verifica se está perto da borda inferior
+                    if (mosquitoRect.bottom > window.innerHeight - 50) {
+                        window.scrollBy(0, scrollSpeed);
+                    }
+                    // Verifica se está perto da borda superior
+                    else if (mosquitoRect.top < 100) {
+                        window.scrollBy(0, -scrollSpeed);
+                    }
+                }, 50);
+            }
+            
             // Mouse/Touch up - verifica se soltou em uma área
-            function endDrag() {
+            function endDrag(e) {
                 if (!isDragging) return;
                 isDragging = false;
                 
+                if (scrollInterval) {
+                    clearInterval(scrollInterval);
+                    scrollInterval = null;
+                }
+                
                 mosquito.style.transition = 'left 0.3s, top 0.3s';
                 mosquito.classList.remove('shadow-xl');
-                mosquito.style.zIndex = '50'; // Volta para o z-index normal
+                mosquito.style.zIndex = '50';
                 
                 // Verifica se soltou em alguma área
                 const mosquitoRect = mosquito.getBoundingClientRect();
@@ -207,9 +299,9 @@
                         droppedOnArea = true;
                         
                         if (area.dataset.type === 'success') {
-                            showAlert(successAlert);
+                            handleSafeArea();
                         } else {
-                            showAlert(dangerAlert);
+                            handleDangerArea();
                         }
                     }
                 });
@@ -217,6 +309,141 @@
                 if (!droppedOnArea) {
                     resetMosquitoPosition();
                 }
+            }
+            
+            // Lógica para área segura
+            function handleSafeArea() {
+                showAlert(successAlert);
+                
+                // Remove uma cópia do mosquito se existir
+                if (mosquitoCopies.length > 0) {
+                    const lastCopy = mosquitoCopies.pop();
+                    lastCopy.remove();
+                    updateMosquitoCount();
+                } 
+                // Se não há cópias, remove o mosquito principal e termina o jogo
+                else if (mosquitoCopies.length === 0) {
+                    mosquito.style.display = 'none';
+                    endGame("🎉 Parabéns! Você eliminou todos os focos do mosquito!");
+                }
+                
+                resetMosquitoPosition();
+            }
+            
+            // Lógica para área de risco
+            function handleDangerArea() {
+                showAlert(dangerAlert);
+                
+                // Cria uma nova cópia do mosquito na área de spawn
+                createMosquitoCopy();
+                
+                // Verifica se o jogador perdeu (6 cópias)
+                if (mosquitoCopies.length >= 6) {
+                    endGame("💀 Game Over! O mosquito se proliferou demais!");
+                }
+                
+                resetMosquitoPosition();
+            }
+            
+            // Cria uma cópia do mosquito na área de spawn
+            function createMosquitoCopy() {
+                const copy = document.createElement('img');
+                copy.src = mosquito.src;
+                copy.className = 'mosquito-copy';
+                copy.alt = 'Mosquito Copy';
+                
+                // Encontra uma posição aleatória que não sobreponha outros mosquitos
+                const position = findNonOverlappingPosition();
+                copy.style.left = `${position.x}px`;
+                copy.style.top = `${position.y}px`;
+                
+                spawnArea.appendChild(copy);
+                mosquitoCopies.push(copy);
+                updateMosquitoCount();
+            }
+            
+            // Encontra uma posição que não sobreponha outros mosquitos
+            function findNonOverlappingPosition() {
+                const spawnRect = spawnArea.getBoundingClientRect();
+                const mosquitoSize = 48; // 3rem = 48px
+                const maxAttempts = 50;
+                
+                for (let attempt = 0; attempt < maxAttempts; attempt++) {
+                    const x = Math.random() * (spawnRect.width - mosquitoSize);
+                    const y = Math.random() * (spawnRect.height - mosquitoSize);
+                    
+                    const newRect = {
+                        left: x,
+                        right: x + mosquitoSize,
+                        top: y,
+                        bottom: y + mosquitoSize
+                    };
+                    
+                    let overlaps = false;
+                    
+                    // Verifica sobreposição com cópias existentes
+                    for (const copy of mosquitoCopies) {
+                        const copyRect = copy.getBoundingClientRect();
+                        const relativeCopyRect = {
+                            left: copyRect.left - spawnRect.left,
+                            right: copyRect.right - spawnRect.left,
+                            top: copyRect.top - spawnRect.top,
+                            bottom: copyRect.bottom - spawnRect.top
+                        };
+                        
+                        if (
+                            newRect.left < relativeCopyRect.right &&
+                            newRect.right > relativeCopyRect.left &&
+                            newRect.top < relativeCopyRect.bottom &&
+                            newRect.bottom > relativeCopyRect.top
+                        ) {
+                            overlaps = true;
+                            break;
+                        }
+                    }
+                    
+                    if (!overlaps) {
+                        return { x, y };
+                    }
+                }
+                
+                // Se não encontrou posição sem sobreposição após várias tentativas,
+                // retorna uma posição aleatória mesmo com sobreposição
+                return {
+                    x: Math.random() * (spawnRect.width - mosquitoSize),
+                    y: Math.random() * (spawnRect.height - mosquitoSize)
+                };
+            }
+            
+            // Atualiza o contador de mosquitos
+            function updateMosquitoCount() {
+                mosquitoCount.textContent = mosquitoCopies.length;
+            }
+            
+            // Finaliza o jogo
+            function endGame(message) {
+                gameOverMessage.textContent = message;
+                gameOver.classList.remove('hidden');
+            }
+            
+            // Reinicia o jogo
+            function restartGame() {
+                // Remove todas as cópias
+                mosquitoCopies.forEach(copy => copy.remove());
+                mosquitoCopies = [];
+                
+                // Reseta o mosquito principal
+                mosquito.style.display = 'block';
+                resetMosquitoPosition();
+                
+                // Atualiza contador
+                updateMosquitoCount();
+                
+                // Esconde tela de game over
+                gameOver.classList.add('hidden');
+                
+                // Scroll para o topo
+                window.scrollTo(0, 0);
             }
             
             function showAlert(alertElement) {
@@ -243,6 +470,9 @@
             
             // Botão reset
             resetBtn.addEventListener('click', resetMosquitoPosition);
+            
+            // Botão restart
+            restartBtn.addEventListener('click', restartGame);
         });
     </script>
     <script>feather.replace();</script>
