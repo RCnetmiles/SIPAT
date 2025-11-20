@@ -1,460 +1,243 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Agentes de Combate</title>
-    <style>
-        /* Reset e configurações gerais */
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Comic Sans MS', cursive, sans-serif;
-        }
-
-        body {
-            background: linear-gradient(135deg, #1e90ff, #ff8c00);
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            padding: 20px;
-            overflow-x: hidden;
-        }
-
-        /* Cabeçalho */
-        header {
-            text-align: center;
-            margin-bottom: 20px;
-            width: 100%;
-        }
-
-        h1 {
-            font-size: 2.5rem;
-            color: #fff;
-            text-shadow: 3px 3px 0 #ff8c00, 5px 5px 0 rgba(0, 0, 0, 0.2);
-            margin-bottom: 10px;
-            letter-spacing: 1px;
-        }
-
-        /* Área do jogo */
-        .game-container {
-            position: relative;
-            width: 100%;
-            max-width: 800px;
-            height: 70vh;
-            background-color: rgba(255, 255, 255, 0.9);
-            border-radius: 20px;
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
-            overflow: hidden;
-            margin-bottom: 20px;
-        }
-
-        /* Mosquito controlado pelo jogador */
-        #player {
-            position: absolute;
-            width: 50px;
-            height: 50px;
-            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><path d="M50,10 C60,30 80,40 90,50 C80,60 60,70 50,90 C40,70 20,60 10,50 C20,40 40,30 50,10 Z" fill="%23000"/><circle cx="45" cy="30" r="5" fill="%23fff"/><circle cx="55" cy="30" r="5" fill="%23fff"/></svg>');
-            background-size: contain;
-            background-repeat: no-repeat;
-            cursor: pointer;
-            z-index: 10;
-            transition: transform 0.1s;
-        }
-
-        /* Mosquitos extras */
-        .extra-mosquito {
-            position: absolute;
-            width: 40px;
-            height: 40px;
-            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><path d="M50,10 C60,30 80,40 90,50 C80,60 60,70 50,90 C40,70 20,60 10,50 C20,40 40,30 50,10 Z" fill="%23000"/><circle cx="45" cy="30" r="5" fill="%23fff"/><circle cx="55" cy="30" r="5" fill="%23fff"/></svg>');
-            background-size: contain;
-            background-repeat: no-repeat;
-            z-index: 5;
-            animation: float 3s infinite ease-in-out;
-        }
-
-        @keyframes float {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-10px); }
-        }
-
-        /* Itens do jogo */
-        .game-item {
-            position: absolute;
-            width: 100px;
-            height: 100px;
-            border-radius: 15px;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
-            background-size: cover;
-            background-position: center;
-            transition: transform 0.3s, box-shadow 0.3s;
-            cursor: pointer;
-        }
-
-        .game-item:hover, .game-item:active {
-            transform: scale(1.05);
-            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
-        }
-
-        /* Tela de vitória */
-        #victory-screen {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(30, 144, 255, 0.95);
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            z-index: 20;
-            opacity: 0;
-            pointer-events: none;
-            transition: opacity 0.5s;
-        }
-
-        #victory-screen.show {
-            opacity: 1;
-            pointer-events: all;
-        }
-
-        .victory-message {
-            color: white;
-            font-size: 2rem;
-            text-align: center;
-            margin-bottom: 20px;
-            text-shadow: 2px 2px 0 #ff8c00;
-        }
-
-        #restart-button {
-            background-color: #ff8c00;
-            color: white;
-            border: none;
-            padding: 15px 30px;
-            font-size: 1.5rem;
-            border-radius: 50px;
-            cursor: pointer;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
-            transition: transform 0.3s, background-color 0.3s;
-        }
-
-        #restart-button:hover {
-            transform: scale(1.1);
-            background-color: #ff6b00;
-        }
-
-        /* Contador de mosquitos */
-        #mosquito-count {
-            position: absolute;
-            top: 10px;
-            right: 10px;
-            background-color: rgba(255, 255, 255, 0.8);
-            padding: 10px 15px;
-            border-radius: 20px;
-            font-size: 1.2rem;
-            font-weight: bold;
-            color: #1e90ff;
-            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2);
-            z-index: 15;
-        }
-
-        /* Instruções */
-        .instructions {
-            background-color: rgba(255, 255, 255, 0.9);
-            padding: 15px;
-            border-radius: 15px;
-            max-width: 800px;
-            text-align: center;
-            margin-bottom: 20px;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
-        }
-
-        .instructions p {
-            margin-bottom: 10px;
-            color: #333;
-            font-size: 1.1rem;
-        }
-
-        /* Responsividade */
-        @media (max-width: 768px) {
-            h1 {
-                font-size: 2rem;
-            }
-            
-            .game-container {
-                height: 60vh;
-            }
-            
-            .game-item {
-                width: 80px;
-                height: 80px;
-            }
-            
-            .victory-message {
-                font-size: 1.5rem;
-            }
-            
-            #restart-button {
-                font-size: 1.2rem;
-                padding: 12px 25px;
-            }
-        }
-
-        @media (max-width: 480px) {
-            h1 {
-                font-size: 1.8rem;
-            }
-            
-            .game-container {
-                height: 50vh;
-            }
-            
-            .game-item {
-                width: 70px;
-                height: 70px;
-            }
-            
-            .victory-message {
-                font-size: 1.2rem;
-            }
-            
-            #restart-button {
-                font-size: 1rem;
-                padding: 10px 20px;
-            }
-            
-            .instructions p {
-                font-size: 0.9rem;
-            }
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Herança Genética - Casos Clínicos</title>
+<style>
+  body {
+    font-family: 'Segoe UI', sans-serif;
+    background: linear-gradient(135deg, #eef2ff, #dbeafe);
+    color: #1e293b;
+    margin: 0;
+    padding: 0;
+  }
+  .container {
+    max-width: 600px;
+    margin: auto;
+    padding: 16px;
+  }
+  h1 {
+    text-align: center;
+    color: #1e3a8a;
+  }
+  #scanner, #case-area {
+    margin-top: 20px;
+  }
+  #reader {
+    width: 100%;
+    height: auto;
+  }
+  #chat {
+    max-height: 400px;
+    overflow-y: auto;
+    padding: 10px;
+    border: 1px solid #e5e7eb;
+    border-radius: 10px;
+    margin-bottom: 10px;
+    background-color: #f9fafb;
+  }
+  .message {
+    margin: 8px 0;
+    padding: 10px 14px;
+    border-radius: 16px;
+    max-width: 80%;
+    line-height: 1.4;
+  }
+  .npc {
+    background-color: #e0e7ff;
+    align-self: flex-start;
+  }
+  .user {
+    background-color: #bfdbfe;
+    align-self: flex-end;
+    margin-left: auto;
+  }
+  #options {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  button {
+    padding: 12px;
+    border: none;
+    border-radius: 10px;
+    background-color: #3b82f6;
+    color: white;
+    font-weight: 500;
+    cursor: pointer;
+    transition: 0.2s;
+  }
+  button:hover {
+    background-color: #2563eb;
+  }
+  .typing {
+    font-style: italic;
+    color: #6b7280;
+  }
+  @media (max-width: 600px) {
+    h1 { font-size: 1.4em; }
+    button { font-size: 0.9em; }
+  }
+</style>
 </head>
 <body>
-    <header>
-        <h1>Agentes de Combate</h1>
-    </header>
-    
-    <div class="instructions">
-        <p>Mova o mosquito para os criadouros para espalhar a dengue ou para locais seguros para eliminá-la!</p>
-        <p>Toque e arraste no celular ou use o mouse no computador.</p>
-    </div>
-    
-    <div class="game-container">
-        <div id="player"></div>
-        <div id="mosquito-count">Mosquitos: 1</div>
-        <div id="victory-screen">
-            <div class="victory-message">Parabéns, você se tornou um agente de combate da dengue!</div>
-            <div class="victory-message">Continue a sua missão fora do jogo!</div>
-            <button id="restart-button">Jogar novamente</button>
-        </div>
-    </div>
+<div class="container">
+  <h1>🧬 Herança Genética - Casos Clínicos</h1>
 
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const gameContainer = document.querySelector('.game-container');
-            const player = document.getElementById('player');
-            const mosquitoCount = document.getElementById('mosquito-count');
-            const victoryScreen = document.getElementById('victory-screen');
-            const restartButton = document.getElementById('restart-button');
-            
-            // Posicionar o jogador no centro
-            player.style.left = (gameContainer.offsetWidth / 2 - player.offsetWidth / 2) + 'px';
-            player.style.top = (gameContainer.offsetHeight / 2 - player.offsetHeight / 2) + 'px';
-            
-            // Criar os itens do jogo
-            const gameItems = [];
-            const breedingSites = [
-                'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect x="10" y="30" width="80" height="40" rx="5" fill="%23007bff"/><rect x="20" y="20" width="60" height="10" rx="5" fill="%238B4513"/></svg>',
-                'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="50" r="40" fill="%23007bff"/><circle cx="50" cy="50" r="30" fill="%23fff"/></svg>',
-                'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect x="10" y="40" width="80" height="30" fill="%23007bff"/><rect x="5" y="30" width="90" height="10" fill="%238B4513"/></svg>'
-            ];
-            
-            const safePlaces = [
-                'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect x="10" y="30" width="80" height="40" rx="5" fill="%23007bff"/><rect x="20" y="20" width="60" height="15" rx="5" fill="%238B4513"/><rect x="30" y="15" width="40" height="5" fill="%238B4513"/></svg>',
-                'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="50" r="40" fill="%23007bff"/><circle cx="50" cy="50" r="30" fill="%23fff"/><rect x="30" y="30" width="40" height="5" fill="%238B4513"/></svg>',
-                'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect x="20" y="40" width="60" height="40" rx="5" fill="%23f4a460"/><rect x="30" y="30" width="40" height="10" rx="5" fill="%236b8e23"/></svg>'
-            ];
-            
-            // Embaralhar as imagens
-            const allItems = [...breedingSites, ...safePlaces].sort(() => Math.random() - 0.5);
-            
-            // Posicionar os itens em círculo
-            const radius = Math.min(gameContainer.offsetWidth, gameContainer.offsetHeight) * 0.35;
-            const centerX = gameContainer.offsetWidth / 2;
-            const centerY = gameContainer.offsetHeight / 2;
-            
-            for (let i = 0; i < allItems.length; i++) {
-                const angle = (i / allItems.length) * 2 * Math.PI;
-                const x = centerX + radius * Math.cos(angle) - 50;
-                const y = centerY + radius * Math.sin(angle) - 50;
-                
-                const item = document.createElement('div');
-                item.className = 'game-item';
-                item.style.backgroundImage = `url('${allItems[i]}')`;
-                item.style.left = x + 'px';
-                item.style.top = y + 'px';
-                
-                // Marcar se é criadouro ou local seguro
-                item.isBreedingSite = breedingSites.includes(allItems[i]);
-                
-                gameContainer.appendChild(item);
-                gameItems.push(item);
-            }
-            
-            // Variáveis do jogo
-            let extraMosquitoes = [];
-            let isDragging = false;
-            let offsetX, offsetY;
-            
-            // Controle por mouse/toque
-            player.addEventListener('mousedown', startDrag);
-            player.addEventListener('touchstart', startDrag);
-            
-            function startDrag(e) {
-                isDragging = true;
-                
-                if (e.type === 'mousedown') {
-                    offsetX = e.clientX - player.offsetLeft;
-                    offsetY = e.clientY - player.offsetTop;
-                    document.addEventListener('mousemove', drag);
-                    document.addEventListener('mouseup', stopDrag);
-                } else {
-                    const touch = e.touches[0];
-                    offsetX = touch.clientX - player.offsetLeft;
-                    offsetY = touch.clientY - player.offsetTop;
-                    document.addEventListener('touchmove', drag);
-                    document.addEventListener('touchend', stopDrag);
-                }
-                
-                e.preventDefault();
-            }
-            
-            function drag(e) {
-                if (!isDragging) return;
-                
-                let clientX, clientY;
-                
-                if (e.type === 'mousemove') {
-                    clientX = e.clientX;
-                    clientY = e.clientY;
-                } else {
-                    clientX = e.touches[0].clientX;
-                    clientY = e.touches[0].clientY;
-                }
-                
-                const containerRect = gameContainer.getBoundingClientRect();
-                let newX = clientX - offsetX - containerRect.left;
-                let newY = clientY - offsetY - containerRect.top;
-                
-                // Limitar movimento dentro do container
-                newX = Math.max(0, Math.min(newX, gameContainer.offsetWidth - player.offsetWidth));
-                newY = Math.max(0, Math.min(newY, gameContainer.offsetHeight - player.offsetHeight));
-                
-                player.style.left = newX + 'px';
-                player.style.top = newY + 'px';
-                
-                // Verificar colisões
-                checkCollisions();
-            }
-            
-            function stopDrag() {
-                isDragging = false;
-                document.removeEventListener('mousemove', drag);
-                document.removeEventListener('touchmove', drag);
-                document.removeEventListener('mouseup', stopDrag);
-                document.removeEventListener('touchend', stopDrag);
-            }
-            
-            function checkCollisions() {
-                const playerRect = player.getBoundingClientRect();
-                
-                gameItems.forEach(item => {
-                    const itemRect = item.getBoundingClientRect();
-                    
-                    if (
-                        playerRect.left < itemRect.right &&
-                        playerRect.right > itemRect.left &&
-                        playerRect.top < itemRect.bottom &&
-                        playerRect.bottom > itemRect.top
-                    ) {
-                        // Colisão detectada
-                        handleCollision(item);
-                    }
-                });
-            }
-            
-            function handleCollision(item) {
-                // Adicionar efeito visual
-                item.style.transform = 'scale(1.1)';
-                setTimeout(() => {
-                    item.style.transform = 'scale(1)';
-                }, 300);
-                
-                if (item.isBreedingSite) {
-                    // Criar novo mosquito
-                    createExtraMosquito();
-                } else {
-                    // Eliminar todos os mosquitos extras
-                    eliminateMosquitoes();
-                }
-                
-                // Verificar vitória
-                checkVictory();
-            }
-            
-            function createExtraMosquito() {
-                const mosquito = document.createElement('div');
-                mosquito.className = 'extra-mosquito';
-                
-                // Posicionar aleatoriamente
-                const x = Math.random() * (gameContainer.offsetWidth - 40);
-                const y = Math.random() * (gameContainer.offsetHeight - 40);
-                
-                mosquito.style.left = x + 'px';
-                mosquito.style.top = y + 'px';
-                
-                gameContainer.appendChild(mosquito);
-                extraMosquitoes.push(mosquito);
-                
-                // Atualizar contador
-                mosquitoCount.textContent = `Mosquitos: ${extraMosquitoes.length + 1}`;
-            }
-            
-            function eliminateMosquitoes() {
-                extraMosquitoes.forEach(mosquito => {
-                    mosquito.remove();
-                });
-                
-                extraMosquitoes = [];
-                mosquitoCount.textContent = `Mosquitos: 1`;
-            }
-            
-            function checkVictory() {
-                if (extraMosquitoes.length === 0) {
-                    // Vitória!
-                    setTimeout(() => {
-                        victoryScreen.classList.add('show');
-                    }, 500);
-                }
-            }
-            
-            // Reiniciar o jogo
-            restartButton.addEventListener('click', function() {
-                // Remover mosquitos extras
-                eliminateMosquitoes();
-                
-                // Reposicionar o jogador
-                player.style.left = (gameContainer.offsetWidth / 2 - player.offsetWidth / 2) + 'px';
-                player.style.top = (gameContainer.offsetHeight / 2 - player.offsetHeight / 2) + 'px';
-                
-                // Esconder tela de vitória
-                victoryScreen.classList.remove('show');
-            });
-        });
-    </script>
+  <div id="scanner">
+    <p>Escaneie o QR Code do caso clínico para começar:</p>
+    <div id="reader"></div>
+  </div>
+
+  <div id="case-area" style="display:none;">
+    <p id="case-desc"></p>
+    <div id="chat"></div>
+    <div id="options"></div>
+  </div>
+</div>
+
+<!-- Biblioteca QR Code -->
+<script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
+
+<script>
+/* ===========================
+   Casos Clínicos (Base Local)
+   =========================== */
+const cases = {
+  "case1": {
+    id: "case1",
+    title: "Caso Clínico 1 - Distrofia Muscular",
+    description: "Paciente de 12 anos com fraqueza muscular progressiva. Há suspeita de condição genética. Descubra o tipo de herança.",
+    dialogue: [
+      { 
+        questions: ["Algum dos pais é afetado?", "Algum dos pais é portador?"],
+        answers: [
+          "Nenhum dos pais apresenta sintomas visíveis.",
+          "A mãe é portadora confirmada da mutação, mas não apresenta sintomas clínicos."
+        ]
+      },
+      { 
+        questions: ["Há outros casos na família?", "Os irmãos são afetados?"],
+        answers: [
+          "Sim, há dois tios maternos que tiveram sintomas semelhantes.",
+          "O irmão mais velho também apresenta os mesmos sintomas."
+        ]
+      },
+      { 
+        questions: ["Há diferença entre meninos e meninas?", "As meninas também são afetadas?"],
+        answers: [
+          "A condição é observada apenas nos meninos da família.",
+          "As meninas geralmente não apresentam sintomas, mas podem ser portadoras."
+        ]
+      },
+      { 
+        questions: ["Há casos em gerações anteriores?", "O pai ou o avô paterno tem sintomas?"],
+        answers: [
+          "O avô materno teve sintomas semelhantes na juventude.",
+          "No lado paterno da família, não há registros da condição."
+        ]
+      }
+    ]
+  }
+};
+
+/* ===========================
+   Sistema de Chat
+   =========================== */
+const chatBox = document.createElement('div');
+const optionsBox = document.createElement('div');
+let step = 0;
+let maxSteps = 4;
+let currentCase = null;
+
+function appendMessage(sender, text) {
+  const msg = document.createElement('div');
+  msg.classList.add('message', sender);
+  msg.textContent = text;
+  document.getElementById('chat').appendChild(msg);
+  document.getElementById('chat').scrollTop = chatBox.scrollHeight;
+}
+
+function typeWriter(text, callback) {
+  const typing = document.createElement('div');
+  typing.classList.add('typing');
+  typing.textContent = "NPC está digitando...";
+  document.getElementById('chat').appendChild(typing);
+  setTimeout(() => {
+    typing.remove();
+    appendMessage('npc', text);
+    if (callback) callback();
+  }, 1000 + Math.random() * 800);
+}
+
+function nextStep() {
+  const options = document.getElementById('options');
+  options.innerHTML = '';
+  if (step >= maxSteps) {
+    appendMessage('npc', "Essas foram todas as perguntas! Agora, com base nas respostas, qual tipo de herança você acha que é?");
+    appendMessage('npc', "💡 Dica: Apenas meninos afetados e mães portadoras... isso sugere herança **ligada ao X recessiva**.");
+    return;
+  }
+  const qData = currentCase.dialogue[step];
+  const btn1 = document.createElement('button');
+  const btn2 = document.createElement('button');
+  btn1.textContent = qData.questions[0];
+  btn2.textContent = qData.questions[1];
+  btn1.onclick = () => chooseOption(0);
+  btn2.onclick = () => chooseOption(1);
+  options.appendChild(btn1);
+  options.appendChild(btn2);
+}
+
+function chooseOption(i) {
+  const qData = currentCase.dialogue[step];
+  appendMessage('user', qData.questions[i]);
+  typeWriter(qData.answers[i], () => {
+    step++;
+    nextStep();
+  });
+}
+
+function startCase(caseId) {
+  currentCase = cases[caseId];
+  if (!currentCase) {
+    alert("Caso não encontrado!");
+    return;
+  }
+  document.getElementById('scanner').style.display = 'none';
+  document.getElementById('case-area').style.display = 'block';
+  document.getElementById('case-desc').innerHTML = `<strong>${currentCase.title}</strong><br>${currentCase.description}`;
+  document.getElementById('chat').innerHTML = '';
+  document.getElementById('options').innerHTML = '';
+  step = 0;
+  typeWriter("Olá! 👋 Eu sou o NPC genético. Você pode fazer até 4 perguntas para descobrir o tipo de herança deste caso.", () => {
+    nextStep();
+  });
+}
+
+/* ===========================
+   Leitor de QR Code
+   =========================== */
+function initQRScanner() {
+  const html5QrCode = new Html5Qrcode("reader");
+  const qrConfig = { fps: 10, qrbox: { width: 250, height: 250 } };
+
+  html5QrCode.start(
+    { facingMode: "environment" },
+    qrConfig,
+    (decodedText) => {
+      html5QrCode.stop().then(() => {
+        startCase(decodedText.trim());
+      });
+    },
+    (errorMessage) => {}
+  ).catch(err => {
+    document.getElementById('reader').innerHTML = "<p style='color:red;'>Erro ao acessar câmera. Verifique as permissões.</p>";
+  });
+}
+
+window.onload = initQRScanner;
+</script>
 </body>
 </html>
