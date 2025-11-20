@@ -3,271 +3,325 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Herança Genética - Chat Interativo</title>
+<title>Herança Genética - Casos Clínicos</title>
 <style>
-body {
-  font-family: 'Segoe UI', sans-serif;
-  background: linear-gradient(135deg, #e0f2fe, #dbeafe);
-  margin: 0; color: #1e3a8a;
-}
-.container {
-  max-width: 600px; margin: auto; padding: 16px;
-}
-h1, h2 { text-align: center; }
-#video { width: 100%; border-radius: 12px; margin-top: 10px; display: none; }
-canvas { display: none; }
-#qr-section, #chat-section { display: none; }
-#chat {
-  background: #fff; border-radius: 12px; padding: 10px;
-  height: 400px; overflow-y: auto; border: 1px solid #cbd5e1;
-}
-.message { margin: 8px 0; padding: 10px 14px; border-radius: 16px; max-width: 80%; }
-.npc { background: #e0e7ff; align-self: flex-start; }
-.user { background: #bfdbfe; margin-left: auto; }
-#options button, #final-options button {
-  display: block; width: 100%; margin: 6px 0; padding: 10px;
-  border: none; border-radius: 10px; background-color: #3b82f6;
-  color: white; font-weight: 500; cursor: pointer;
-}
-#options button:hover, #final-options button:hover { background-color: #2563eb; }
-.typing { font-style: italic; color: #6b7280; }
-#score { text-align: center; margin-bottom: 10px; font-size: 18px; color: #0f172a; }
-#dica {
-  background-color: #fef9c3; border: 1px solid #facc15; padding: 10px;
-  border-radius: 10px; margin: 10px 0; display: none; text-align: center;
-}
-@media (max-width: 600px) { #chat { height: 60vh; } }
+  body {
+    font-family: 'Segoe UI', sans-serif;
+    background: linear-gradient(135deg, #eef2ff, #dbeafe);
+    color: #1e293b;
+    margin: 0;
+    padding: 0;
+  }
+  .container {
+    max-width: 600px;
+    margin: auto;
+    padding: 16px;
+  }
+  h1 {
+    text-align: center;
+    color: #1e3a8a;
+  }
+  #scanner, #case-area {
+    margin-top: 20px;
+  }
+  #reader {
+    width: 100%;
+    height: auto;
+  }
+  #chat {
+    max-height: 400px;
+    overflow-y: auto;
+    padding: 10px;
+    border: 1px solid #e5e7eb;
+    border-radius: 10px;
+    margin-bottom: 10px;
+    background-color: #f9fafb;
+    display: flex;
+    flex-direction: column;
+  }
+  .message {
+    margin: 8px 0;
+    padding: 10px 14px;
+    border-radius: 16px;
+    max-width: 80%;
+    line-height: 1.4;
+  }
+  .npc { background-color: #e0e7ff; align-self: flex-start; }
+  .user { background-color: #bfdbfe; align-self: flex-end; margin-left: auto; }
+  #options {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  button {
+    padding: 12px;
+    border: none;
+    border-radius: 10px;
+    background-color: #3b82f6;
+    color: white;
+    font-weight: 500;
+    cursor: pointer;
+    transition: 0.2s;
+  }
+  button:hover { background-color: #2563eb; }
+  .typing { font-style: italic; color: #6b7280; }
+  .score {
+    text-align: center;
+    font-weight: bold;
+    color: #16a34a;
+    margin-top: 10px;
+  }
+  @media (max-width: 600px) {
+    h1 { font-size: 1.4em; }
+    button { font-size: 0.9em; }
+  }
 </style>
 </head>
 <body>
 <div class="container">
-  <h1>🧬 Herança Genética</h1>
-  <div id="qr-section">
-    <h2>Leitor de QR Code</h2>
-    <p>Pontuação total: <strong id="total-score">0 pts</strong></p>
-    <video id="video"></video>
-    <canvas id="canvas" hidden></canvas>
-    <p>Ou selecione um caso manualmente:</p>
-    <button onclick="startCase('case1')">Caso Clínico 1</button>
-    <button onclick="startCase('case2')">Caso Clínico 2</button>
+  <h1>🧬 Herança Genética - Casos Clínicos</h1>
+
+  <div id="scanner">
+    <p>Escaneie o QR Code do caso clínico para começar:</p>
+    <div id="reader"></div>
+    <p class="score">Pontuação atual: <span id="score-display">0</span> pts</p>
   </div>
 
-  <div id="chat-section">
-    <h2 id="case-title"></h2>
+  <div id="case-area" style="display:none;">
+    <p id="case-desc"></p>
     <div id="chat"></div>
     <div id="options"></div>
-    <div id="dica"></div>
-    <div id="final-options"></div>
   </div>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
+<script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
 <script>
+/* ===========================
+   Casos Clínicos
+   =========================== */
 const cases = {
-  case1: {
-    title: "Caso Clínico 1 - Fraqueza Muscular Progressiva",
-    type: "Ligada ao X Recessiva",
-    pairs: [
-      [
-        { q: "Algum dos pais é afetado?", a: "Nenhum dos pais apresenta sintomas visíveis." },
-        { q: "A mãe é portadora?", a: "Sim, a mãe é portadora confirmada da mutação." }
-      ],
-      [
-        { q: "Há casos no lado materno?", a: "Sim, dois tios maternos tiveram sintomas semelhantes." },
-        { q: "Há casos no lado paterno?", a: "Não, o lado paterno da família não apresenta registros." }
-      ],
-      [
-        { q: "Homens e mulheres são igualmente afetados?", a: "A condição ocorre apenas em meninos da família." },
-        { q: "As meninas também adoecem?", a: "Elas geralmente não têm sintomas, mas podem ser portadoras." }
-      ],
-      [
-        { q: "O paciente tem irmãos afetados?", a: "Sim, o irmão mais velho apresenta sintomas parecidos." },
-        { q: "Há casos em gerações anteriores?", a: "O avô materno apresentou sintomas na juventude." }
-      ],
-      [
-        { q: "Os pais são consanguíneos?", a: "Não há parentesco entre os pais." },
-        { q: "Os sintomas surgem desde o nascimento?", a: "Aparecem gradualmente na infância." }
-      ],
-      [
-        { q: "A gravidade varia entre irmãos?", a: "Sim, há leve diferença, mas ambos são afetados." },
-        { q: "O pai teve sintomas semelhantes?", a: "Não, o pai é completamente saudável." }
-      ]
+  "case1": {
+    id: "case1",
+    title: "Caso Clínico 1 - Distrofia Muscular",
+    description: "Paciente de 12 anos com fraqueza muscular progressiva. Há suspeita de condição genética. Descubra o tipo de herança.",
+    dialogue: [
+      { questions: ["Algum dos pais é afetado?", "Algum dos pais é portador?"], answers: ["Nenhum dos pais apresenta sintomas visíveis.", "A mãe é portadora confirmada da mutação, mas não apresenta sintomas clínicos."] },
+      { questions: ["Há outros casos na família?", "Os irmãos são afetados?"], answers: ["Sim, há dois tios maternos que tiveram sintomas semelhantes.", "O irmão mais velho também apresenta sintomas."] },
+      { questions: ["As meninas também são afetadas?", "Há diferença entre meninos e meninas?"], answers: ["As meninas geralmente não apresentam sintomas, mas podem ser portadoras.", "A condição é observada apenas nos meninos da família."] },
+      { questions: ["Há casos em gerações anteriores?", "O avô paterno teve sintomas?"], answers: ["O avô materno teve sintomas semelhantes.", "No lado paterno, não há registros."] },
+      { questions: ["A mãe do paciente apresenta a mutação?", "O pai apresenta sintomas?"], answers: ["Sim, a mãe apresenta a mutação em heterozigose.", "Não, o pai é completamente saudável."] },
+      { questions: ["A transmissão ocorre apenas por mães?", "Pais passam o gene para filhos homens?"], answers: ["Sim, o gene é transmitido por mães para filhos homens.", "Não, pais não passam o gene para filhos homens."] }
     ],
-    dica: "Os meninos afetados herdaram o gene mutado de mães portadoras. Herança ligada ao X recessiva."
+    correct: "Ligada ao X Recessiva",
+    tip: "💡 Dica: Apenas meninos afetados e mães portadoras — isso indica herança **ligada ao X recessiva**."
   },
-  case2: {
-    title: "Caso Clínico 2 - Alterações Cutâneas e Auditivas",
-    type: "Autossômica Dominante",
-    pairs: [
-      [
-        { q: "Algum dos pais é afetado?", a: "Sim, o pai também tem manchas cutâneas e perda auditiva leve." },
-        { q: "A mãe apresenta sintomas?", a: "Não, a mãe não tem qualquer manifestação da condição." }
-      ],
-      [
-        { q: "Há casos em todas as gerações?", a: "Sim, há afetados em todas as gerações conhecidas." },
-        { q: "A doença pulou alguma geração?", a: "Não, sempre há pelo menos um afetado em cada geração." }
-      ],
-      [
-        { q: "Homens e mulheres são igualmente afetados?", a: "Sim, ambos os sexos têm chance semelhante de manifestação." },
-        { q: "A gravidade é diferente entre sexos?", a: "Não, não há diferença significativa entre homens e mulheres." }
-      ],
-      [
-        { q: "Há portadores assintomáticos?", a: "Não, quem herda o gene manifesta algum sintoma." },
-        { q: "Há consanguinidade nos casamentos?", a: "Não há registros de consanguinidade." }
-      ],
-      [
-        { q: "A condição piora nas gerações seguintes?", a: "Não, a gravidade permanece semelhante entre gerações." },
-        { q: "Há gêmeos com sintomas diferentes?", a: "Sim, gêmeos idênticos têm intensidade diferente dos sintomas." }
-      ],
-      [
-        { q: "Há membros adotados?", a: "Não, todos são biológicos." },
-        { q: "Os sintomas aparecem cedo?", a: "Sim, geralmente na infância ou adolescência." }
-      ]
+
+  "case2": {
+    id: "case2",
+    title: "Caso Clínico 2 - Transtorno Neurodegenerativo",
+    description: "Paciente de 38 anos com movimentos involuntários e declínio cognitivo progressivo. Histórico familiar importante.",
+    dialogue: [
+      { questions: ["O paciente tem pais afetados?", "Quantas gerações apresentam a condição?"], answers: ["Sim, o pai do paciente foi afetado.", "Há registros em 3 gerações consecutivas."] },
+      { questions: ["Há transmissão de pai para filho?", "Mulheres são afetadas igualmente?"], answers: ["Sim, o pai transmitiu para o paciente.", "Sim, homens e mulheres são afetados na mesma proporção."] },
+      { questions: ["Alguém da família escapou da condição?", "Há casos de não afetados entre os filhos?"], answers: ["Sim, a irmã mais velha do paciente é saudável.", "Em cada geração, cerca de 50% dos filhos são afetados."] },
+      { questions: ["A condição pula gerações?", "Avós foram afetados?"], answers: ["Não, aparece em todas as gerações.", "Sim, o avô paterno teve a mesma condição."] },
+      { questions: ["Há padrão de idade para início?", "Os sintomas começam em que fase?"], answers: ["Sim, geralmente entre 30-50 anos.", "Os sintomas são progressivos e começam na idade adulta."] },
+      { questions: ["Irmãos do paciente são afetados?", "Quantos irmãos têm sintomas?"], answers: ["Dois dos quatro irmãos são afetados.", "O paciente e seu irmão mais novo manifestam a doença."] },
+      { questions: ["Há casais consanguíneos?", "Os pais são parentes?"], answers: ["Não, não há histórico de consanguinidade.", "Os pais não são aparentados."] },
+      { questions: ["Filhos do paciente podem herdar?", "Qual o risco para a próxima geração?"], answers: ["Sim, cada filho tem 50% de chance.", "O risco é de 50% independente do sexo."] }
     ],
-    dica: "Afeta homens e mulheres igualmente e aparece em todas as gerações — padrão autossômico dominante."
+    correct: "Autossômica Dominante",
+    tip: "💡 Dica: Afeta múltiplas gerações, ambos os sexos igualmente, e não pula gerações — típico de **herança autossômica dominante**."
+  },
+
+  "case3": {
+    id: "case3",
+    title: "Caso Clínico 3 - Doença Sistêmica Progressiva",
+    description: "Criança de 6 anos com infecções respiratórias recorrentes e problemas de crescimento. Irmãos com sintomas similares.",
+    dialogue: [
+      { questions: ["Os pais são afetados?", "Há consanguinidade parental?"], answers: ["Não, ambos os pais são saudáveis.", "Sim, os pais são primos em primeiro grau."] },
+      { questions: ["Quantos irmãos são afetados?", "Há padrão entre os sexos?"], answers: ["Dois dos três irmãos têm sintomas.", "Afeta igualmente meninos e meninas."] },
+      { questions: ["Tios ou tias são afetados?", "Há casos na família extensa?"], answers: ["Sim, um tio materno teve doença similar.", "Alguns primos também apresentam sintomas."] },
+      { questions: ["A condição pula gerações?", "Avós foram afetados?"], answers: ["Sim, aparece esporadicamente.", "Não há registro nos avós."] },
+      { questions: ["Risco para filhos de afetados?", "Se o paciente tiver filhos, qual o risco?"], answers: ["Todos seriam portadores, mas apenas se casarem com portadores.", "O risco depende do parceiro(a)."] },
+      { questions: ["Portadores são sintomáticos?", "Heterozigotos apresentam sinais?"], answers: ["Não, apenas homozigotos são afetados.", "Portadores são assintomáticos."] },
+      { questions: ["Há exames para detectar portadores?", "É possível identificar quem carrega o gene?"], answers: ["Sim, há teste genético disponível.", "O teste pode identificar portadores saudáveis."] },
+      { questions: ["A condição é mais comum em grupos específicos?", "Há fatores étnicos envolvidos?"], answers: ["Sim, mais prevalente em certas populações.", "A incidência aumenta com consanguinidade."] }
+    ],
+    correct: "Autossômica Recessiva",
+    tip: "💡 Dica: Pais saudáveis, múltiplos filhos afetados, e consanguinidade parental — característico de **herança autossômica recessiva**."
   }
 };
 
-let selectedCase = null, step = 0, usedDica = false, score = 0;
-const chat = document.getElementById("chat"), options = document.getElementById("options");
+/* ===========================
+   Controle de Pontuação
+   =========================== */
+function setScore(points) {
+  let current = parseInt(getScore());
+  const newScore = current + points;
+  document.cookie = "score=" + newScore + ";path=/";
+  document.getElementById('score-display').textContent = newScore;
+}
+function getScore() {
+  const name = "score=";
+  const ca = document.cookie.split(';');
+  for (let c of ca) {
+    c = c.trim();
+    if (c.indexOf(name) === 0) return c.substring(name.length);
+  }
+  return "0";
+}
 
+/* ===========================
+   Variáveis Globais
+   =========================== */
+let step = 0, currentCase = null, usedTip = false;
+const chatBox = document.getElementById('chat');
+
+/* ===========================
+   Funções do Chat
+   =========================== */
 function appendMessage(sender, text) {
-  const msg = document.createElement("div");
-  msg.classList.add("message", sender);
+  const msg = document.createElement('div');
+  msg.classList.add('message', sender);
   msg.textContent = text;
-  chat.appendChild(msg);
-  chat.scrollTop = chat.scrollHeight;
+  chatBox.appendChild(msg);
+  chatBox.scrollTop = chatBox.scrollHeight;
 }
 
 function typeWriter(text, callback) {
-  const typing = document.createElement("div");
-  typing.classList.add("typing");
+  const typing = document.createElement('div');
+  typing.classList.add('typing');
   typing.textContent = "NPC está digitando...";
-  chat.appendChild(typing);
-  chat.scrollTop = chat.scrollHeight;
+  chatBox.appendChild(typing);
+  chatBox.scrollTop = chatBox.scrollHeight;
   setTimeout(() => {
-    chat.removeChild(typing);
-    appendMessage("npc", text);
+    typing.remove();
+    appendMessage('npc', text);
     if (callback) callback();
   }, 1000 + Math.random() * 800);
 }
 
-function getCookie(name) {
-  const m = document.cookie.match('(^|;)\\s*' + name + '\\s*=\\s*([^;]+)');
-  return m ? parseInt(m.pop()) : 0;
+function nextStep() {
+  const options = document.getElementById('options');
+  options.innerHTML = '';
+  if (step >= currentCase.dialogue.length) {
+    endCase();
+    return;
+  }
+  const qData = currentCase.dialogue[step];
+  const btn1 = document.createElement('button');
+  const btn2 = document.createElement('button');
+  btn1.textContent = qData.questions[0];
+  btn2.textContent = qData.questions[1];
+  btn1.onclick = () => chooseOption(0);
+  btn2.onclick = () => chooseOption(1);
+  options.appendChild(btn1);
+  options.appendChild(btn2);
 }
-function setCookie(name, val) { document.cookie = `${name}=${val}; path=/; max-age=31536000`; }
-function updateTotalScore() { document.getElementById("total-score").textContent = `${getCookie("geneticScore")} pts`; }
 
-function startCase(id) {
-  selectedCase = cases[id];
-  step = 0; usedDica = false; score = 0;
-  document.getElementById("qr-section").style.display = "none";
-  document.getElementById("chat-section").style.display = "block";
-  document.getElementById("case-title").textContent = selectedCase.title;
-  chat.innerHTML = ""; options.innerHTML = ""; document.getElementById("final-options").innerHTML = "";
-  appendMessage("npc", "Olá! 👋 Sou o assistente genético. Você pode fazer até 6 perguntas. Escolha entre as opções abaixo:");
-  nextPair();
+function chooseOption(i) {
+  const qData = currentCase.dialogue[step];
+  appendMessage('user', qData.questions[i]);
+  typeWriter(qData.answers[i], () => {
+    step++;
+    nextStep();
+  });
 }
 
-function nextPair() {
-  options.innerHTML = "";
-  if (step >= 6) return showFinalOptions();
-  const pair = selectedCase.pairs[step];
-  pair.forEach((opt, i) => {
-    const btn = document.createElement("button");
-    btn.textContent = opt.q;
-    btn.onclick = () => chooseOption(pair[i]);
+function endCase() {
+  const options = document.getElementById('options');
+  options.innerHTML = '';
+  appendMessage('npc', "Essas foram todas as perguntas! Agora escolha o tipo de herança genética:");
+  const choices = ["Autossômica Dominante", "Autossômica Recessiva", "Ligada ao X Recessiva", "Ligada ao X Dominante"];
+  choices.forEach(opt => {
+    const btn = document.createElement('button');
+    btn.textContent = opt;
+    btn.onclick = () => verifyAnswer(opt);
     options.appendChild(btn);
   });
+  const tipBtn = document.createElement('button');
+  tipBtn.textContent = "Mostrar dica 💡";
+  tipBtn.style.backgroundColor = "#f59e0b";
+  tipBtn.onclick = () => showTip();
+  options.appendChild(tipBtn);
 }
 
-function chooseOption(option) {
-  appendMessage("user", option.q);
-  options.innerHTML = "";
-  typeWriter(option.a, () => {
-    step++;
-    nextPair();
-  });
-}
-
-function showFinalOptions() {
-  options.innerHTML = "";
-  const final = document.getElementById("final-options");
-  final.innerHTML = "<h3>Qual o tipo de herança genética?</h3>";
-  ["Autossômica Dominante", "Autossômica Recessiva", "Ligada ao X Recessiva", "Ligada ao X Dominante"].forEach(type => {
-    const btn = document.createElement("button");
-    btn.textContent = type;
-    btn.onclick = () => verifyAnswer(type);
-    final.appendChild(btn);
-  });
-  const dicaBtn = document.createElement("button");
-  dicaBtn.textContent = "💡 Mostrar Dica";
-  dicaBtn.onclick = showDica;
-  final.appendChild(dicaBtn);
-}
-
-function showDica() {
-  usedDica = true;
-  const dicaDiv = document.getElementById("dica");
-  dicaDiv.style.display = "block";
-  dicaDiv.textContent = "💡 Dica: " + selectedCase.dica;
-}
-
-function verifyAnswer(ans) {
-  const final = document.getElementById("final-options");
-  final.innerHTML = "";
-  let correct = (ans === selectedCase.type);
-  score = correct ? (usedDica ? 50 : 100) : 0;
-  appendMessage("npc", correct ? "✅ Correto! Excelente trabalho!" : "❌ Incorreto. Reveja as pistas com atenção.");
-  let total = getCookie("geneticScore") + score;
-  setCookie("geneticScore", total);
-  const btn = document.createElement("button");
-  btn.textContent = "↩️ Retornar ao leitor QR";
-  btn.onclick = returnToQR;
-  final.appendChild(btn);
-}
-
-function returnToQR() {
-  document.getElementById("chat-section").style.display = "none";
-  document.getElementById("qr-section").style.display = "block";
-  document.getElementById("dica").style.display = "none";
-  updateTotalScore();
-}
-
-// ====== LEITOR DE QR CODE ======
-const video = document.getElementById('video');
-const canvas = document.getElementById('canvas');
-const ctx = canvas.getContext('2d');
-
-async function startQR() {
-  document.getElementById("qr-section").style.display = "block";
-  updateTotalScore();
-  const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
-  video.srcObject = stream;
-  video.setAttribute("playsinline", true);
-  video.style.display = "block";
-  video.play();
-  tick();
-}
-
-function tick() {
-  if (video.readyState === video.HAVE_ENOUGH_DATA) {
-    canvas.height = video.videoHeight;
-    canvas.width = video.videoWidth;
-    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-    const img = ctx.getImageData(0, 0, canvas.width, canvas.height);
-    const code = jsQR(img.data, img.width, img.height);
-    if (code) {
-      const txt = code.data.trim();
-      if (cases[txt]) startCase(txt);
-      return;
-    }
+function showTip() {
+  if (!usedTip) {
+    appendMessage('npc', currentCase.tip);
+    usedTip = true;
   }
-  requestAnimationFrame(tick);
 }
 
-window.onload = startQR;
+function verifyAnswer(choice) {
+  const options = document.getElementById('options');
+  options.innerHTML = '';
+  if (choice === currentCase.correct) {
+    appendMessage('npc', "✅ Correto! Excelente dedução!");
+    if (usedTip) setScore(50);
+    else setScore(100);
+  } else {
+    appendMessage('npc', "❌ Resposta incorreta. Reveja as pistas do caso.");
+  }
+
+  const backBtn = document.createElement('button');
+  backBtn.textContent = "Voltar ao leitor de QR Code";
+  backBtn.onclick = () => {
+    document.getElementById('case-area').style.display = 'none';
+    document.getElementById('scanner').style.display = 'block';
+    document.getElementById('score-display').textContent = getScore();
+    step = 0;
+    usedTip = false;
+    initQRScanner();
+  };
+  options.appendChild(backBtn);
+}
+
+/* ===========================
+   Iniciar Caso
+   =========================== */
+function startCase(caseId) {
+  currentCase = cases[caseId];
+  if (!currentCase) {
+    alert("Caso não encontrado!");
+    return;
+  }
+  document.getElementById('scanner').style.display = 'none';
+  document.getElementById('case-area').style.display = 'block';
+  document.getElementById('case-desc').innerHTML = `<strong>${currentCase.title}</strong><br>${currentCase.description}`;
+  chatBox.innerHTML = '';
+  document.getElementById('options').innerHTML = '';
+  step = 0;
+  usedTip = false;
+  typeWriter(`Olá! 👋 Eu sou o NPC genético. Você pode fazer até ${currentCase.dialogue.length} perguntas para descobrir o tipo de herança deste caso.`, () => {
+    nextStep();
+  });
+}
+
+/* ===========================
+   Leitor de QR Code
+   =========================== */
+function initQRScanner() {
+  document.getElementById('score-display').textContent = getScore();
+  const html5QrCode = new Html5Qrcode("reader");
+  const qrConfig = { fps: 10, qrbox: { width: 250, height: 250 } };
+
+  html5QrCode.start(
+    { facingMode: "environment" },
+    qrConfig,
+    (decodedText) => {
+      html5QrCode.stop().then(() => {
+        startCase(decodedText.trim());
+      });
+    },
+    (errorMessage) => {}
+  ).catch(() => {
+    document.getElementById('reader').innerHTML = "<p style='color:red;'>Erro ao acessar câmera. Verifique as permissões.</p>";
+  });
+}
+
+window.onload = initQRScanner;
 </script>
 </body>
 </html>
