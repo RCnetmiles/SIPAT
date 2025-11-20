@@ -113,7 +113,7 @@ const cases = {
       { questions: ["A transmissão ocorre apenas por mães?", "Pais passam o gene para filhos homens?"], answers: ["Sim, o gene é transmitido por mães para filhos homens.", "Não, pais não passam o gene para filhos homens."] }
     ],
     correct: "Ligada ao X Recessiva",
-    tip: "💡 Dica: Apenas meninos afetados e mães portadoras — isso indica herança **ligada ao X recessiva**."
+    tip: "💡 Dica: Apenas meninos afetados e mães portadoras."
   },
 
   "case2": {
@@ -131,7 +131,7 @@ const cases = {
       { questions: ["Filhos do paciente podem herdar?", "Qual o risco para a próxima geração?"], answers: ["Sim, cada filho tem 50% de chance.", "O risco é de 50% independente do sexo."] }
     ],
     correct: "Autossômica Dominante",
-    tip: "💡 Dica: Afeta múltiplas gerações, ambos os sexos igualmente, e não pula gerações — típico de **herança autossômica dominante**."
+    tip: "💡 Dica: Afeta múltiplas gerações, ambos os sexos igualmente, e não pula gerações."
   },
 
   "case3": {
@@ -149,8 +149,62 @@ const cases = {
       { questions: ["A condição é mais comum em grupos específicos?", "Há fatores étnicos envolvidos?"], answers: ["Sim, mais prevalente em certas populações.", "A incidência aumenta com consanguinidade."] }
     ],
     correct: "Autossômica Recessiva",
-    tip: "💡 Dica: Pais saudáveis, múltiplos filhos afetados, e consanguinidade parental — característico de **herança autossômica recessiva**."
-  }
+    tip: "💡 Dica: Pais saudáveis, múltiplos filhos afetados, e consanguinidade parental."
+  },
+
+  "case4": {
+    id: "case4",
+    title: "Caso Clínico 4 - Distúrbio do Desenvolvimento",
+    description: "Paciente do sexo feminino, 10 anos, com atraso no desenvolvimento e crises epilépticas. Histórico familiar com múltiplos afetados.",
+    dialogue: [
+      { questions: ["A mãe é afetada?", "O pai é afetado?"], answers: ["Sim, a mãe apresenta sintomas leves.", "Não, o pai é completamente saudável."] },
+      { questions: ["Homens e mulheres são afetados?", "Há diferença na gravidade entre sexos?"], answers: ["Sim, ambos os sexos são afetados.", "Mulheres geralmente têm sintomas mais leves que homens."] },
+      { questions: ["Pais afetados transmitem para todos os filhos?", "Há padrão específico na transmissão?"], answers: ["Mulheres afetadas transmitem para 50% dos filhos.", "Homens afetados transmitem para TODAS as filhas e para NENHUM filho homem."] },
+      { questions: ["Há casos de transmissão homem-homem?", "Pais passam para filhos homens?"], answers: ["Não, nunca há transmissão de pai para filho.", "É impossível um homem afetado ter um filho homem afetado."] },
+      { questions: ["Irmãos do paciente são afetados?", "Quantos irmãos têm sintomas?"], answers: ["Dois dos quatro irmãos são afetados.", "A irmã e um irmão manifestam a condição."] },
+      { questions: ["Avós maternos foram afetados?", "Há histórico no lado materno?"], answers: ["Sim, o avô materno teve a condição.", "A avó materna era saudável."] },
+      { questions: ["Filhas de homens afetados herdam?", "Qual o risco para filhas de homens doentes?"], answers: ["TODAS as filhas de homens afetados herdam a condição.", "100% das filhas serão afetadas."] },
+      { questions: ["A condição pode pular gerações?", "Há casos de portadores assintomáticos?"], answers: ["Não, não pula gerações.", "Mulheres podem ser levemente afetadas ou assintomáticas."] }
+    ],
+    correct: "Ligada ao X Dominante",
+    tip: "💡 Dica: Afeta ambos os sexos, mas homens NUNCA transmitem para filhos homens."
+},
+
+"case5": {
+    id: "case5",
+    title: "Caso Clínico 5 - Característica Masculina Específica",
+    description: "Paciente do sexo masculino, 35 anos, com padrão específico de crescimento de pelos e alterações na pele. Apenas homens da família apresentam a condição.",
+    dialogue: [
+      { questions: ["Mulheres são afetadas?", "Há casos em mulheres na família?"], answers: ["Não, apenas homens são afetados.", "Nenhuma mulher na família apresenta a condição."] },
+      { questions: ["Como a condição é transmitida?", "Pais afetados passam para filhos?"], answers: ["Apenas homens afetados transmitem.", "Homens afetados passam a condição para TODOS os seus filhos homens."] },
+      { questions: ["Filhas de homens afetados herdam?", "Mulheres transmitem a condição?"], answers: ["Não, filhas não são afetadas.", "Mulheres nunca transmitem a condição, mesmo sendo filhas de homens afetados."] },
+      { questions: ["Há transmissão por lado materno?", "A mãe influencia na herança?"], answers: ["Não, o lado materno não influencia.", "A condição é transmitida exclusivamente pelo lado paterno."] },
+      { questions: ["Todos os filhos homens são afetados?", "Há exceções na transmissão?"], answers: ["Sim, 100% dos filhos homens de um pai afetado herdam a condição.", "Não há exceções na transmissão."] },
+      { questions: ["Avô paterno foi afetado?", "Há histórico no lado paterno?"], answers: ["Sim, o avô paterno tinha a mesma condição.", "Todos os tios paternos também são afetados."] },
+      { questions: ["Irmãos do paciente são afetados?", "Todos os irmãos homens têm a condição?"], answers: ["Sim, todos os irmãos homens são afetados.", "Os três irmãos homens apresentam a característica."] },
+      { questions: ["A condição aparece em todas as gerações?", "Há continuidade na transmissão?"], answers: ["Sim, em todas as gerações onde há homens.", "Só não aparece se não houver descendentes homens."] }
+    ],
+    correct: "Holândrica",
+    tip: "💡 Dica: Apenas homens afetados, transmitida de pai para TODOS os filhos homens."
+},
+
+"case6": {
+    id: "case6", 
+    title: "Caso Clínico 6 - Distúrbio Neuromuscular Progressivo",
+    description: "Paciente do sexo masculino, 25 anos, com fraqueza muscular progressiva e perda visual. Mãe e irmãos também apresentam sintomas.",
+    dialogue: [
+      { questions: ["A mãe é afetada?", "O pai é afetado?"], answers: ["Sim, a mãe tem sintomas moderados.", "Não, o pai é completamente saudável."] },
+      { questions: ["Todos os filhos são afetados?", "Há padrão na transmissão materna?"], answers: ["Sim, TODOS os filhos de mães afetadas herdam a condição.", "100% dos filhos, independente do sexo, são afetados."] },
+      { questions: ["Homens afetados transmitem?", "Pais passam para filhos?"], answers: ["Não, homens afetados NUNCA transmitem a condição.", "Homens não passam a condição para nenhum de seus filhos."] },
+      { questions: ["Irmãos do paciente são afetados?", "Todos os irmãos têm sintomas?"], answers: ["Sim, todos os três irmãos são afetados.", "Dois irmãos e uma irmã manifestam a doença."] },
+      { questions: ["Avó materna foi afetada?", "Há histórico no lado materno?"], answers: ["Sim, a avó materna tinha a condição.", "A avó materna transmitiu para todos os seus filhos."] },
+      { questions: ["Há diferença entre sexos na expressão?", "Homens e mulheres são igualmente afetados?"], answers: ["Ambos os sexos são afetados, mas a gravidade pode variar.", "Não há padrão consistente de diferença entre sexos."] },
+      { questions: ["Filhos de mulheres não afetadas herdam?", "Mulheres saudáveis transmitem?"], answers: ["Não, apenas mulheres afetadas transmitem.", "Se a mãe não é afetada, nenhum filho terá a condição."] },
+      { questions: ["A condição aparece em outras linhagens?", "Há casos por transmissão paterna?"], answers: ["Não, apenas na linhagem materna.", "Não há nenhum caso por transmissão paterna."] }
+    ],
+    correct: "Matrilinear", 
+    tip: "💡 Dica: Transmitida APENAS por mulheres afetadas para TODOS os seus filhos."
+}
 };
 
 /* ===========================
