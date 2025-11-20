@@ -3,75 +3,40 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Herança Genética - Simulador</title>
+<title>Herança Genética - Chat Interativo</title>
 <style>
-  body {
-    font-family: "Segoe UI", sans-serif;
-    background: linear-gradient(135deg, #eff6ff, #dbeafe);
-    margin: 0;
-    color: #1e3a8a;
-  }
-  .container {
-    max-width: 600px;
-    margin: 0 auto;
-    padding: 20px;
-  }
-  h1, h2 {
-    text-align: center;
-  }
-  #qr-section, #chat-section {
-    display: none;
-  }
-  #chat {
-    background: white;
-    border-radius: 10px;
-    padding: 10px;
-    height: 400px;
-    overflow-y: auto;
-    border: 1px solid #cbd5e1;
-  }
-  .message {
-    margin: 10px 0;
-    padding: 10px 14px;
-    border-radius: 16px;
-    max-width: 80%;
-  }
-  .npc { background: #e0e7ff; align-self: flex-start; }
-  .user { background: #bfdbfe; margin-left: auto; }
-  #options button, #final-options button {
-    display: block;
-    width: 100%;
-    margin: 6px 0;
-    padding: 10px;
-    border: none;
-    border-radius: 10px;
-    background-color: #3b82f6;
-    color: white;
-    font-weight: 500;
-    cursor: pointer;
-  }
-  #options button:hover, #final-options button:hover {
-    background-color: #2563eb;
-  }
-  .typing { font-style: italic; color: #6b7280; }
-  #score {
-    text-align: center;
-    margin-bottom: 10px;
-    font-size: 18px;
-    color: #0f172a;
-  }
-  #dica {
-    background-color: #fef9c3;
-    border: 1px solid #facc15;
-    padding: 10px;
-    border-radius: 10px;
-    margin: 10px 0;
-    display: none;
-    text-align: center;
-  }
-  @media (max-width: 600px) {
-    #chat { height: 60vh; }
-  }
+body {
+  font-family: 'Segoe UI', sans-serif;
+  background: linear-gradient(135deg, #e0f2fe, #dbeafe);
+  margin: 0; color: #1e3a8a;
+}
+.container {
+  max-width: 600px; margin: auto; padding: 16px;
+}
+h1, h2 { text-align: center; }
+#video { width: 100%; border-radius: 12px; margin-top: 10px; display: none; }
+canvas { display: none; }
+#qr-section, #chat-section { display: none; }
+#chat {
+  background: #fff; border-radius: 12px; padding: 10px;
+  height: 400px; overflow-y: auto; border: 1px solid #cbd5e1;
+}
+.message { margin: 8px 0; padding: 10px 14px; border-radius: 16px; max-width: 80%; }
+.npc { background: #e0e7ff; align-self: flex-start; }
+.user { background: #bfdbfe; margin-left: auto; }
+#options button, #final-options button {
+  display: block; width: 100%; margin: 6px 0; padding: 10px;
+  border: none; border-radius: 10px; background-color: #3b82f6;
+  color: white; font-weight: 500; cursor: pointer;
+}
+#options button:hover, #final-options button:hover { background-color: #2563eb; }
+.typing { font-style: italic; color: #6b7280; }
+#score { text-align: center; margin-bottom: 10px; font-size: 18px; color: #0f172a; }
+#dica {
+  background-color: #fef9c3; border: 1px solid #facc15; padding: 10px;
+  border-radius: 10px; margin: 10px 0; display: none; text-align: center;
+}
+@media (max-width: 600px) { #chat { height: 60vh; } }
 </style>
 </head>
 <body>
@@ -80,7 +45,9 @@
   <div id="qr-section">
     <h2>Leitor de QR Code</h2>
     <p>Pontuação total: <strong id="total-score">0 pts</strong></p>
-    <p>Escaneie um QR Code ou selecione um caso para testar:</p>
+    <video id="video"></video>
+    <canvas id="canvas" hidden></canvas>
+    <p>Ou selecione um caso manualmente:</p>
     <button onclick="startCase('case1')">Caso Clínico 1</button>
     <button onclick="startCase('case2')">Caso Clínico 2</button>
   </div>
@@ -100,132 +67,140 @@ const cases = {
   case1: {
     title: "Caso Clínico 1 - Fraqueza Muscular Progressiva",
     type: "Ligada ao X Recessiva",
-    questions: [
-      { q: "Algum dos pais é afetado?", a: "Nenhum dos pais apresenta sintomas visíveis." },
-      { q: "A mãe ou o pai são portadores conhecidos?", a: "A mãe é portadora confirmada da mutação." },
-      { q: "Há outros casos na família materna?", a: "Sim, dois tios maternos apresentaram os mesmos sintomas." },
-      { q: "Há diferença entre meninos e meninas?", a: "A condição é observada apenas em meninos da família." },
-      { q: "As meninas apresentam sintomas?", a: "As meninas geralmente não têm sintomas, mas podem ser portadoras." },
-      { q: "Há casos em gerações anteriores?", a: "O avô materno teve sintomas semelhantes na juventude." },
-      { q: "Algum caso vem do lado paterno?", a: "No lado paterno não há registros da condição." },
-      { q: "O paciente tem irmãos afetados?", a: "Sim, o irmão mais velho apresenta sintomas semelhantes." }
+    pairs: [
+      [
+        { q: "Algum dos pais é afetado?", a: "Nenhum dos pais apresenta sintomas visíveis." },
+        { q: "A mãe é portadora?", a: "Sim, a mãe é portadora confirmada da mutação." }
+      ],
+      [
+        { q: "Há casos no lado materno?", a: "Sim, dois tios maternos tiveram sintomas semelhantes." },
+        { q: "Há casos no lado paterno?", a: "Não, o lado paterno da família não apresenta registros." }
+      ],
+      [
+        { q: "Homens e mulheres são igualmente afetados?", a: "A condição ocorre apenas em meninos da família." },
+        { q: "As meninas também adoecem?", a: "Elas geralmente não têm sintomas, mas podem ser portadoras." }
+      ],
+      [
+        { q: "O paciente tem irmãos afetados?", a: "Sim, o irmão mais velho apresenta sintomas parecidos." },
+        { q: "Há casos em gerações anteriores?", a: "O avô materno apresentou sintomas na juventude." }
+      ],
+      [
+        { q: "Os pais são consanguíneos?", a: "Não há parentesco entre os pais." },
+        { q: "Os sintomas surgem desde o nascimento?", a: "Aparecem gradualmente na infância." }
+      ],
+      [
+        { q: "A gravidade varia entre irmãos?", a: "Sim, há leve diferença, mas ambos são afetados." },
+        { q: "O pai teve sintomas semelhantes?", a: "Não, o pai é completamente saudável." }
+      ]
     ],
-    dica: "Os meninos afetados herdaram o gene mutado de mães portadoras. Pense em uma herança ligada ao cromossomo X (recessiva)."
+    dica: "Os meninos afetados herdaram o gene mutado de mães portadoras. Herança ligada ao X recessiva."
   },
   case2: {
     title: "Caso Clínico 2 - Alterações Cutâneas e Auditivas",
     type: "Autossômica Dominante",
-    questions: [
-      { q: "Algum dos pais apresenta sintomas semelhantes?", a: "Sim, o pai também apresenta manchas cutâneas e perda auditiva leve." },
-      { q: "Há casos em todas as gerações?", a: "Sim, pelo menos um membro afetado em cada geração." },
-      { q: "Homens e mulheres são igualmente afetados?", a: "Sim, ambos os sexos apresentam a condição com frequência semelhante." },
-      { q: "Há indivíduos portadores sem sintomas?", a: "Não, quem tem o gene manifesta algum grau da condição." },
-      { q: "Há casamentos entre parentes?", a: "Não há registros de consanguinidade." },
-      { q: "A condição tende a piorar nas gerações seguintes?", a: "Não, a gravidade é semelhante entre gerações." },
-      { q: "Há gêmeos com diferentes manifestações?", a: "Sim, gêmeos idênticos têm intensidade diferente dos sintomas." },
-      { q: "Alguém foi adotado?", a: "Não, todos os membros são biológicos." }
+    pairs: [
+      [
+        { q: "Algum dos pais é afetado?", a: "Sim, o pai também tem manchas cutâneas e perda auditiva leve." },
+        { q: "A mãe apresenta sintomas?", a: "Não, a mãe não tem qualquer manifestação da condição." }
+      ],
+      [
+        { q: "Há casos em todas as gerações?", a: "Sim, há afetados em todas as gerações conhecidas." },
+        { q: "A doença pulou alguma geração?", a: "Não, sempre há pelo menos um afetado em cada geração." }
+      ],
+      [
+        { q: "Homens e mulheres são igualmente afetados?", a: "Sim, ambos os sexos têm chance semelhante de manifestação." },
+        { q: "A gravidade é diferente entre sexos?", a: "Não, não há diferença significativa entre homens e mulheres." }
+      ],
+      [
+        { q: "Há portadores assintomáticos?", a: "Não, quem herda o gene manifesta algum sintoma." },
+        { q: "Há consanguinidade nos casamentos?", a: "Não há registros de consanguinidade." }
+      ],
+      [
+        { q: "A condição piora nas gerações seguintes?", a: "Não, a gravidade permanece semelhante entre gerações." },
+        { q: "Há gêmeos com sintomas diferentes?", a: "Sim, gêmeos idênticos têm intensidade diferente dos sintomas." }
+      ],
+      [
+        { q: "Há membros adotados?", a: "Não, todos são biológicos." },
+        { q: "Os sintomas aparecem cedo?", a: "Sim, geralmente na infância ou adolescência." }
+      ]
     ],
-    dica: "A condição aparece em todas as gerações, afetando homens e mulheres igualmente. Isso indica uma herança autossômica dominante."
+    dica: "Afeta homens e mulheres igualmente e aparece em todas as gerações — padrão autossômico dominante."
   }
 };
 
-let selectedCase = null;
-let asked = [];
-let step = 0;
-let usedDica = false;
-let score = 0;
-
-function getCookie(name) {
-  const match = document.cookie.match('(^|;)\\s*' + name + '\\s*=\\s*([^;]+)');
-  return match ? parseInt(match.pop()) : 0;
-}
-function setCookie(name, value) {
-  document.cookie = `${name}=${value}; path=/; max-age=31536000`;
-}
-
-function updateTotalScore() {
-  document.getElementById("total-score").textContent = `${getCookie("geneticScore")} pts`;
-}
-
-function startCase(id) {
-  selectedCase = cases[id];
-  asked = [];
-  step = 0;
-  usedDica = false;
-  score = 0;
-  document.getElementById("qr-section").style.display = "none";
-  document.getElementById("chat-section").style.display = "block";
-  document.getElementById("case-title").textContent = selectedCase.title;
-  document.getElementById("chat").innerHTML = "";
-  document.getElementById("options").innerHTML = "";
-  appendMessage("npc", "Olá! 👋 Sou seu assistente genético. Você pode fazer até 6 perguntas sobre a família deste paciente. Escolha bem!");
-  nextQuestion();
-}
+let selectedCase = null, step = 0, usedDica = false, score = 0;
+const chat = document.getElementById("chat"), options = document.getElementById("options");
 
 function appendMessage(sender, text) {
-  const div = document.createElement("div");
-  div.classList.add("message", sender);
-  div.textContent = text;
-  document.getElementById("chat").appendChild(div);
-  document.getElementById("chat").scrollTop = document.getElementById("chat").scrollHeight;
-}
-
-function nextQuestion() {
-  const options = document.getElementById("options");
-  options.innerHTML = "";
-
-  if (step >= 6) {
-    showFinalOptions();
-    return;
-  }
-
-  let remaining = selectedCase.questions.filter((_, i) => !asked.includes(i));
-  remaining.forEach((item, i) => {
-    const btn = document.createElement("button");
-    btn.textContent = item.q;
-    btn.onclick = () => selectQuestion(i, remaining);
-    options.appendChild(btn);
-  });
-}
-
-function selectQuestion(index, remaining) {
-  const questionIndex = selectedCase.questions.findIndex(q => q.q === remaining[index].q);
-  asked.push(questionIndex);
-  appendMessage("user", remaining[index].q);
-  typeWriter(selectedCase.questions[questionIndex].a, () => {
-    step++;
-    nextQuestion();
-  });
+  const msg = document.createElement("div");
+  msg.classList.add("message", sender);
+  msg.textContent = text;
+  chat.appendChild(msg);
+  chat.scrollTop = chat.scrollHeight;
 }
 
 function typeWriter(text, callback) {
-  const chat = document.getElementById("chat");
   const typing = document.createElement("div");
   typing.classList.add("typing");
   typing.textContent = "NPC está digitando...";
   chat.appendChild(typing);
   chat.scrollTop = chat.scrollHeight;
-
   setTimeout(() => {
     chat.removeChild(typing);
     appendMessage("npc", text);
     if (callback) callback();
-  }, 1200 + Math.random() * 800);
+  }, 1000 + Math.random() * 800);
+}
+
+function getCookie(name) {
+  const m = document.cookie.match('(^|;)\\s*' + name + '\\s*=\\s*([^;]+)');
+  return m ? parseInt(m.pop()) : 0;
+}
+function setCookie(name, val) { document.cookie = `${name}=${val}; path=/; max-age=31536000`; }
+function updateTotalScore() { document.getElementById("total-score").textContent = `${getCookie("geneticScore")} pts`; }
+
+function startCase(id) {
+  selectedCase = cases[id];
+  step = 0; usedDica = false; score = 0;
+  document.getElementById("qr-section").style.display = "none";
+  document.getElementById("chat-section").style.display = "block";
+  document.getElementById("case-title").textContent = selectedCase.title;
+  chat.innerHTML = ""; options.innerHTML = ""; document.getElementById("final-options").innerHTML = "";
+  appendMessage("npc", "Olá! 👋 Sou o assistente genético. Você pode fazer até 6 perguntas. Escolha entre as opções abaixo:");
+  nextPair();
+}
+
+function nextPair() {
+  options.innerHTML = "";
+  if (step >= 6) return showFinalOptions();
+  const pair = selectedCase.pairs[step];
+  pair.forEach((opt, i) => {
+    const btn = document.createElement("button");
+    btn.textContent = opt.q;
+    btn.onclick = () => chooseOption(pair[i]);
+    options.appendChild(btn);
+  });
+}
+
+function chooseOption(option) {
+  appendMessage("user", option.q);
+  options.innerHTML = "";
+  typeWriter(option.a, () => {
+    step++;
+    nextPair();
+  });
 }
 
 function showFinalOptions() {
-  const options = document.getElementById("options");
   options.innerHTML = "";
   const final = document.getElementById("final-options");
   final.innerHTML = "<h3>Qual o tipo de herança genética?</h3>";
-
   ["Autossômica Dominante", "Autossômica Recessiva", "Ligada ao X Recessiva", "Ligada ao X Dominante"].forEach(type => {
     const btn = document.createElement("button");
     btn.textContent = type;
     btn.onclick = () => verifyAnswer(type);
     final.appendChild(btn);
   });
-
   const dicaBtn = document.createElement("button");
   dicaBtn.textContent = "💡 Mostrar Dica";
   dicaBtn.onclick = showDica;
@@ -239,16 +214,14 @@ function showDica() {
   dicaDiv.textContent = "💡 Dica: " + selectedCase.dica;
 }
 
-function verifyAnswer(answer) {
+function verifyAnswer(ans) {
   const final = document.getElementById("final-options");
   final.innerHTML = "";
-  let correct = (answer === selectedCase.type);
+  let correct = (ans === selectedCase.type);
   score = correct ? (usedDica ? 50 : 100) : 0;
-  appendMessage("npc", correct ? "✅ Correto! Excelente trabalho!" : "❌ Resposta incorreta. Reveja as pistas com atenção.");
-
+  appendMessage("npc", correct ? "✅ Correto! Excelente trabalho!" : "❌ Incorreto. Reveja as pistas com atenção.");
   let total = getCookie("geneticScore") + score;
   setCookie("geneticScore", total);
-
   const btn = document.createElement("button");
   btn.textContent = "↩️ Retornar ao leitor QR";
   btn.onclick = returnToQR;
@@ -262,10 +235,39 @@ function returnToQR() {
   updateTotalScore();
 }
 
-window.onload = () => {
+// ====== LEITOR DE QR CODE ======
+const video = document.getElementById('video');
+const canvas = document.getElementById('canvas');
+const ctx = canvas.getContext('2d');
+
+async function startQR() {
   document.getElementById("qr-section").style.display = "block";
   updateTotalScore();
-};
+  const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
+  video.srcObject = stream;
+  video.setAttribute("playsinline", true);
+  video.style.display = "block";
+  video.play();
+  tick();
+}
+
+function tick() {
+  if (video.readyState === video.HAVE_ENOUGH_DATA) {
+    canvas.height = video.videoHeight;
+    canvas.width = video.videoWidth;
+    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+    const img = ctx.getImageData(0, 0, canvas.width, canvas.height);
+    const code = jsQR(img.data, img.width, img.height);
+    if (code) {
+      const txt = code.data.trim();
+      if (cases[txt]) startCase(txt);
+      return;
+    }
+  }
+  requestAnimationFrame(tick);
+}
+
+window.onload = startQR;
 </script>
 </body>
 </html>
