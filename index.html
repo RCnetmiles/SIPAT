@@ -36,6 +36,8 @@
     border-radius: 10px;
     margin-bottom: 10px;
     background-color: #f9fafb;
+    display: flex;
+    flex-direction: column;
   }
   .message {
     margin: 8px 0;
@@ -95,7 +97,7 @@
 <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
 <script>
 /* ===========================
-   Casos Clínicos (Base Local)
+   Casos Clínicos
    =========================== */
 const cases = {
   "case1": {
@@ -116,42 +118,47 @@ const cases = {
 };
 
 /* ===========================
-   Controle de Jogo / Cookies
+   Controle de Pontuação
    =========================== */
 function setScore(points) {
   let current = parseInt(getScore());
-  document.cookie = "score=" + (current + points) + ";path=/";
-  document.getElementById('score-display').textContent = current + points;
+  const newScore = current + points;
+  document.cookie = "score=" + newScore + ";path=/";
+  document.getElementById('score-display').textContent = newScore;
 }
 function getScore() {
-  let name = "score=";
-  let decodedCookie = decodeURIComponent(document.cookie);
-  let ca = decodedCookie.split(';');
+  const name = "score=";
+  const ca = document.cookie.split(';');
   for (let c of ca) {
-    while (c.charAt(0) === ' ') c = c.substring(1);
-    if (c.indexOf(name) === 0) return c.substring(name.length, c.length);
+    c = c.trim();
+    if (c.indexOf(name) === 0) return c.substring(name.length);
   }
   return "0";
 }
 
 /* ===========================
-   Sistema de Chat e Casos
+   Variáveis Globais
    =========================== */
 let step = 0, maxSteps = 6, currentCase = null, usedTip = false;
+const chatBox = document.getElementById('chat');
 
+/* ===========================
+   Funções do Chat
+   =========================== */
 function appendMessage(sender, text) {
   const msg = document.createElement('div');
   msg.classList.add('message', sender);
   msg.textContent = text;
-  document.getElementById('chat').appendChild(msg);
-  document.getElementById('chat').scrollTop = chatBox.scrollHeight;
+  chatBox.appendChild(msg);
+  chatBox.scrollTop = chatBox.scrollHeight;
 }
 
 function typeWriter(text, callback) {
   const typing = document.createElement('div');
   typing.classList.add('typing');
   typing.textContent = "NPC está digitando...";
-  document.getElementById('chat').appendChild(typing);
+  chatBox.appendChild(typing);
+  chatBox.scrollTop = chatBox.scrollHeight;
   setTimeout(() => {
     typing.remove();
     appendMessage('npc', text);
@@ -197,7 +204,6 @@ function endCase() {
     btn.onclick = () => verifyAnswer(opt);
     options.appendChild(btn);
   });
-
   const tipBtn = document.createElement('button');
   tipBtn.textContent = "Mostrar dica 💡";
   tipBtn.style.backgroundColor = "#f59e0b";
@@ -237,7 +243,7 @@ function verifyAnswer(choice) {
 }
 
 /* ===========================
-   Inicialização do Caso
+   Iniciar Caso
    =========================== */
 function startCase(caseId) {
   currentCase = cases[caseId];
@@ -248,7 +254,7 @@ function startCase(caseId) {
   document.getElementById('scanner').style.display = 'none';
   document.getElementById('case-area').style.display = 'block';
   document.getElementById('case-desc').innerHTML = `<strong>${currentCase.title}</strong><br>${currentCase.description}`;
-  document.getElementById('chat').innerHTML = '';
+  chatBox.innerHTML = '';
   document.getElementById('options').innerHTML = '';
   step = 0;
   usedTip = false;
@@ -264,6 +270,7 @@ function initQRScanner() {
   document.getElementById('score-display').textContent = getScore();
   const html5QrCode = new Html5Qrcode("reader");
   const qrConfig = { fps: 10, qrbox: { width: 250, height: 250 } };
+
   html5QrCode.start(
     { facingMode: "environment" },
     qrConfig,
@@ -273,7 +280,7 @@ function initQRScanner() {
       });
     },
     (errorMessage) => {}
-  ).catch(err => {
+  ).catch(() => {
     document.getElementById('reader').innerHTML = "<p style='color:red;'>Erro ao acessar câmera. Verifique as permissões.</p>";
   });
 }
