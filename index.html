@@ -102,7 +102,7 @@
 const cases = {
   "case1": {
     id: "case1",
-    title: "Caso Clínico 1 - Distrofia Muscular",
+    title: "Caso 1 - Distrofia Muscular",
     description: "Paciente de 12 anos com fraqueza muscular progressiva. Há suspeita de condição genética. Descubra o tipo de herança.",
     dialogue: [
       { questions: ["Algum dos pais é afetado?", "Algum dos pais é portador?"], answers: ["Nenhum dos pais apresenta sintomas visíveis.", "A mãe é portadora confirmada da mutação, mas não apresenta sintomas clínicos."] },
@@ -118,7 +118,7 @@ const cases = {
 
   "case2": {
     id: "case2",
-    title: "Caso Clínico 2 - Transtorno Neurodegenerativo",
+    title: "Caso 2 - Transtorno Neurodegenerativo",
     description: "Paciente de 38 anos com movimentos involuntários e declínio cognitivo progressivo. Histórico familiar importante.",
     dialogue: [
       { questions: ["O paciente tem pais afetados?", "Quantas gerações apresentam a condição?"], answers: ["Sim, o pai do paciente foi afetado.", "Há registros em 3 gerações consecutivas."] },
@@ -136,7 +136,7 @@ const cases = {
 
   "case3": {
     id: "case3",
-    title: "Caso Clínico 3 - Doença Sistêmica Progressiva",
+    title: "Caso 3 - Doença Sistêmica Progressiva",
     description: "Criança de 6 anos com infecções respiratórias recorrentes e problemas de crescimento. Irmãos com sintomas similares.",
     dialogue: [
       { questions: ["Os pais são afetados?", "Há consanguinidade parental?"], answers: ["Não, ambos os pais são saudáveis.", "Sim, os pais são primos em primeiro grau."] },
@@ -154,7 +154,7 @@ const cases = {
 
   "case4": {
     id: "case4",
-    title: "Caso Clínico 4 - Distúrbio do Desenvolvimento",
+    title: "Caso 4 - Distúrbio do Desenvolvimento",
     description: "Paciente do sexo feminino, 10 anos, com atraso no desenvolvimento e crises epilépticas. Histórico familiar com múltiplos afetados.",
     dialogue: [
       { questions: ["A mãe é afetada?", "O pai é afetado?"], answers: ["Sim, a mãe apresenta sintomas leves.", "Não, o pai é completamente saudável."] },
@@ -172,8 +172,8 @@ const cases = {
 
 "case5": {
     id: "case5",
-    title: "Caso Clínico 5 - Característica Masculina Específica",
-    description: "Paciente do sexo masculino, 35 anos, com padrão específico de crescimento de pelos e alterações na pele. Apenas homens da família apresentam a condição.",
+    title: "Caso 5 - Característica Masculina Específica",
+    description: "Paciente do sexo masculino, 35 anos, com padrão específico de crescimento de pelos e alterações na pele.",
     dialogue: [
       { questions: ["Mulheres são afetadas?", "Há casos em mulheres na família?"], answers: ["Não, apenas homens são afetados.", "Nenhuma mulher na família apresenta a condição."] },
       { questions: ["Como a condição é transmitida?", "Pais afetados passam para filhos?"], answers: ["Apenas homens afetados transmitem.", "Homens afetados passam a condição para TODOS os seus filhos homens."] },
@@ -190,8 +190,8 @@ const cases = {
 
 "case6": {
     id: "case6", 
-    title: "Caso Clínico 6 - Distúrbio Neuromuscular Progressivo",
-    description: "Paciente do sexo masculino, 25 anos, com fraqueza muscular progressiva e perda visual. Mãe e irmãos também apresentam sintomas.",
+    title: "Caso 6 - Distúrbio Neuromuscular Progressivo",
+    description: "Paciente do sexo masculino, 25 anos, com fraqueza muscular progressiva e perda visual.",
     dialogue: [
       { questions: ["A mãe é afetada?", "O pai é afetado?"], answers: ["Sim, a mãe tem sintomas moderados.", "Não, o pai é completamente saudável."] },
       { questions: ["Todos os filhos são afetados?", "Há padrão na transmissão materna?"], answers: ["Sim, TODOS os filhos de mães afetadas herdam a condição.", "100% dos filhos, independente do sexo, são afetados."] },
@@ -246,7 +246,7 @@ function appendMessage(sender, text) {
 function typeWriter(text, callback) {
   const typing = document.createElement('div');
   typing.classList.add('typing');
-  typing.textContent = "NPC está digitando...";
+  typing.textContent = "Paciente está digitando...";
   chatBox.appendChild(typing);
   chatBox.scrollTop = chatBox.scrollHeight;
   setTimeout(() => {
@@ -287,7 +287,7 @@ function endCase() {
   const options = document.getElementById('options');
   options.innerHTML = '';
   appendMessage('npc', "Essas foram todas as perguntas! Agora escolha o tipo de herança genética:");
-  const choices = ["Autossômica Dominante", "Autossômica Recessiva", "Ligada ao X Recessiva", "Ligada ao X Dominante"];
+  const choices = ["Autossômica Dominante", "Autossômica Recessiva", "Ligada ao X Recessiva", "Ligada ao X Dominante", "Holândrica", "Matrilinear"];
   choices.forEach(opt => {
     const btn = document.createElement('button');
     btn.textContent = opt;
@@ -312,11 +312,11 @@ function verifyAnswer(choice) {
   const options = document.getElementById('options');
   options.innerHTML = '';
   if (choice === currentCase.correct) {
-    appendMessage('npc', "✅ Correto! Excelente dedução!");
+    appendMessage('Sistema', "✅ Correto! Excelente dedução!");
     if (usedTip) setScore(50);
     else setScore(100);
   } else {
-    appendMessage('npc', "❌ Resposta incorreta. Reveja as pistas do caso.");
+    appendMessage('Sistema', "❌ Resposta incorreta. Reveja as pistas do caso.");
   }
 
   const backBtn = document.createElement('button');
@@ -348,7 +348,7 @@ function startCase(caseId) {
   document.getElementById('options').innerHTML = '';
   step = 0;
   usedTip = false;
-  typeWriter(`Olá! 👋 Eu sou o NPC genético. Você pode fazer até ${currentCase.dialogue.length} perguntas para descobrir o tipo de herança deste caso.`, () => {
+  typeWriter(`Olá genetcista! 👋 Eu sou seu paciente. Você pode fazer até ${currentCase.dialogue.length} perguntas para descobrir qual o meu tipo de herança.`, () => {
     nextStep();
   });
 }
