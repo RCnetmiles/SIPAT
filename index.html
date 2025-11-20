@@ -44,15 +44,8 @@
     max-width: 80%;
     line-height: 1.4;
   }
-  .npc {
-    background-color: #e0e7ff;
-    align-self: flex-start;
-  }
-  .user {
-    background-color: #bfdbfe;
-    align-self: flex-end;
-    margin-left: auto;
-  }
+  .npc { background-color: #e0e7ff; align-self: flex-start; }
+  .user { background-color: #bfdbfe; align-self: flex-end; margin-left: auto; }
   #options {
     display: flex;
     flex-direction: column;
@@ -68,12 +61,13 @@
     cursor: pointer;
     transition: 0.2s;
   }
-  button:hover {
-    background-color: #2563eb;
-  }
-  .typing {
-    font-style: italic;
-    color: #6b7280;
+  button:hover { background-color: #2563eb; }
+  .typing { font-style: italic; color: #6b7280; }
+  .score {
+    text-align: center;
+    font-weight: bold;
+    color: #16a34a;
+    margin-top: 10px;
   }
   @media (max-width: 600px) {
     h1 { font-size: 1.4em; }
@@ -88,6 +82,7 @@
   <div id="scanner">
     <p>Escaneie o QR Code do caso clínico para começar:</p>
     <div id="reader"></div>
+    <p class="score">Pontuação atual: <span id="score-display">0</span> pts</p>
   </div>
 
   <div id="case-area" style="display:none;">
@@ -97,9 +92,7 @@
   </div>
 </div>
 
-<!-- Biblioteca QR Code -->
 <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
-
 <script>
 /* ===========================
    Casos Clínicos (Base Local)
@@ -110,46 +103,41 @@ const cases = {
     title: "Caso Clínico 1 - Distrofia Muscular",
     description: "Paciente de 12 anos com fraqueza muscular progressiva. Há suspeita de condição genética. Descubra o tipo de herança.",
     dialogue: [
-      { 
-        questions: ["Algum dos pais é afetado?", "Algum dos pais é portador?"],
-        answers: [
-          "Nenhum dos pais apresenta sintomas visíveis.",
-          "A mãe é portadora confirmada da mutação, mas não apresenta sintomas clínicos."
-        ]
-      },
-      { 
-        questions: ["Há outros casos na família?", "Os irmãos são afetados?"],
-        answers: [
-          "Sim, há dois tios maternos que tiveram sintomas semelhantes.",
-          "O irmão mais velho também apresenta os mesmos sintomas."
-        ]
-      },
-      { 
-        questions: ["Há diferença entre meninos e meninas?", "As meninas também são afetadas?"],
-        answers: [
-          "A condição é observada apenas nos meninos da família.",
-          "As meninas geralmente não apresentam sintomas, mas podem ser portadoras."
-        ]
-      },
-      { 
-        questions: ["Há casos em gerações anteriores?", "O pai ou o avô paterno tem sintomas?"],
-        answers: [
-          "O avô materno teve sintomas semelhantes na juventude.",
-          "No lado paterno da família, não há registros da condição."
-        ]
-      }
-    ]
+      { questions: ["Algum dos pais é afetado?", "Algum dos pais é portador?"], answers: ["Nenhum dos pais apresenta sintomas visíveis.", "A mãe é portadora confirmada da mutação, mas não apresenta sintomas clínicos."] },
+      { questions: ["Há outros casos na família?", "Os irmãos são afetados?"], answers: ["Sim, há dois tios maternos que tiveram sintomas semelhantes.", "O irmão mais velho também apresenta sintomas."] },
+      { questions: ["As meninas também são afetadas?", "Há diferença entre meninos e meninas?"], answers: ["As meninas geralmente não apresentam sintomas, mas podem ser portadoras.", "A condição é observada apenas nos meninos da família."] },
+      { questions: ["Há casos em gerações anteriores?", "O avô paterno teve sintomas?"], answers: ["O avô materno teve sintomas semelhantes.", "No lado paterno, não há registros."] },
+      { questions: ["A mãe do paciente apresenta a mutação?", "O pai apresenta sintomas?"], answers: ["Sim, a mãe apresenta a mutação em heterozigose.", "Não, o pai é completamente saudável."] },
+      { questions: ["A transmissão ocorre apenas por mães?", "Pais passam o gene para filhos homens?"], answers: ["Sim, o gene é transmitido por mães para filhos homens.", "Não, pais não passam o gene para filhos homens."] }
+    ],
+    correct: "Ligada ao X Recessiva",
+    tip: "💡 Dica: Apenas meninos afetados e mães portadoras — isso indica herança **ligada ao X recessiva**."
   }
 };
 
 /* ===========================
-   Sistema de Chat
+   Controle de Jogo / Cookies
    =========================== */
-const chatBox = document.createElement('div');
-const optionsBox = document.createElement('div');
-let step = 0;
-let maxSteps = 4;
-let currentCase = null;
+function setScore(points) {
+  let current = parseInt(getScore());
+  document.cookie = "score=" + (current + points) + ";path=/";
+  document.getElementById('score-display').textContent = current + points;
+}
+function getScore() {
+  let name = "score=";
+  let decodedCookie = decodeURIComponent(document.cookie);
+  let ca = decodedCookie.split(';');
+  for (let c of ca) {
+    while (c.charAt(0) === ' ') c = c.substring(1);
+    if (c.indexOf(name) === 0) return c.substring(name.length, c.length);
+  }
+  return "0";
+}
+
+/* ===========================
+   Sistema de Chat e Casos
+   =========================== */
+let step = 0, maxSteps = 6, currentCase = null, usedTip = false;
 
 function appendMessage(sender, text) {
   const msg = document.createElement('div');
@@ -175,8 +163,7 @@ function nextStep() {
   const options = document.getElementById('options');
   options.innerHTML = '';
   if (step >= maxSteps) {
-    appendMessage('npc', "Essas foram todas as perguntas! Agora, com base nas respostas, qual tipo de herança você acha que é?");
-    appendMessage('npc', "💡 Dica: Apenas meninos afetados e mães portadoras... isso sugere herança **ligada ao X recessiva**.");
+    endCase();
     return;
   }
   const qData = currentCase.dialogue[step];
@@ -199,6 +186,59 @@ function chooseOption(i) {
   });
 }
 
+function endCase() {
+  const options = document.getElementById('options');
+  options.innerHTML = '';
+  appendMessage('npc', "Essas foram todas as perguntas! Agora escolha o tipo de herança genética:");
+  const choices = ["Autossômica Dominante", "Autossômica Recessiva", "Ligada ao X Recessiva", "Ligada ao X Dominante"];
+  choices.forEach(opt => {
+    const btn = document.createElement('button');
+    btn.textContent = opt;
+    btn.onclick = () => verifyAnswer(opt);
+    options.appendChild(btn);
+  });
+
+  const tipBtn = document.createElement('button');
+  tipBtn.textContent = "Mostrar dica 💡";
+  tipBtn.style.backgroundColor = "#f59e0b";
+  tipBtn.onclick = () => showTip();
+  options.appendChild(tipBtn);
+}
+
+function showTip() {
+  if (!usedTip) {
+    appendMessage('npc', currentCase.tip);
+    usedTip = true;
+  }
+}
+
+function verifyAnswer(choice) {
+  const options = document.getElementById('options');
+  options.innerHTML = '';
+  if (choice === currentCase.correct) {
+    appendMessage('npc', "✅ Correto! Excelente dedução!");
+    if (usedTip) setScore(50);
+    else setScore(100);
+  } else {
+    appendMessage('npc', "❌ Resposta incorreta. Reveja as pistas do caso.");
+  }
+
+  const backBtn = document.createElement('button');
+  backBtn.textContent = "Voltar ao leitor de QR Code";
+  backBtn.onclick = () => {
+    document.getElementById('case-area').style.display = 'none';
+    document.getElementById('scanner').style.display = 'block';
+    document.getElementById('score-display').textContent = getScore();
+    step = 0;
+    usedTip = false;
+    initQRScanner();
+  };
+  options.appendChild(backBtn);
+}
+
+/* ===========================
+   Inicialização do Caso
+   =========================== */
 function startCase(caseId) {
   currentCase = cases[caseId];
   if (!currentCase) {
@@ -211,7 +251,8 @@ function startCase(caseId) {
   document.getElementById('chat').innerHTML = '';
   document.getElementById('options').innerHTML = '';
   step = 0;
-  typeWriter("Olá! 👋 Eu sou o NPC genético. Você pode fazer até 4 perguntas para descobrir o tipo de herança deste caso.", () => {
+  usedTip = false;
+  typeWriter("Olá! 👋 Eu sou o NPC genético. Você pode fazer até 6 perguntas para descobrir o tipo de herança deste caso.", () => {
     nextStep();
   });
 }
@@ -220,9 +261,9 @@ function startCase(caseId) {
    Leitor de QR Code
    =========================== */
 function initQRScanner() {
+  document.getElementById('score-display').textContent = getScore();
   const html5QrCode = new Html5Qrcode("reader");
   const qrConfig = { fps: 10, qrbox: { width: 250, height: 250 } };
-
   html5QrCode.start(
     { facingMode: "environment" },
     qrConfig,
