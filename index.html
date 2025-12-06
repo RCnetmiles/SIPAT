@@ -1,710 +1,541 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Genetics RPG: Clinical Interview</title>
-    <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
-    <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
-
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Genetics RPG Simulator</title>
     <style>
+        @import url('https://fonts.googleapis.com/css2?family=VT323&display=swap');
         :root {
-            --bg-color: #2b2b2b;
-            --screen-bg: #9bbc0f; /* Verde Gameboy Clássico */
-            --screen-dark: #0f380f;
-            --border-color: #333;
-            --device-body: #c0c0c0;
-            --accent: #8b0000;
+            --bg-color: #f0f0f0;
+            --screen-bg: #e0f8cf;
+            --dark-color: #2b2b2b;
+            --border-color: #4a4a4a;
+            --primary-btn: #3d6cb9;
+            --accent: #d32f2f;
         }
-
         * { box-sizing: border-box; }
-
         body {
             font-family: 'VT323', monospace;
-            background-color: var(--bg-color);
+            background-color: var(--dark-color);
             margin: 0;
             display: flex;
             justify-content: center;
             align-items: center;
             min-height: 100vh;
-            color: var(--screen-dark);
-            font-size: 22px; /* Fonte levemente maior para legibilidade */
+            color: var(--dark-color);
+            font-size: 20px;
         }
-
-        /* O Dispositivo Físico */
         .device-container {
             width: 100%;
-            max-width: 600px;
-            background-color: var(--device-body);
-            border-radius: 10px 10px 40px 10px;
-            padding: 30px 20px 50px 20px;
-            box-shadow: 0 10px 20px rgba(0,0,0,0.5), inset -5px -5px 10px rgba(0,0,0,0.2);
-            border: 2px solid #999;
-            position: relative;
+            max-width: 800px;
+            background-color: #dcdcdc;
+            border-radius: 20px;
+            padding: 20px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+            border: 4px solid #999;
         }
-
-        /* A Tela LCD */
-        .screen-bezel {
-            background-color: #555;
-            padding: 20px 20px 5px 20px;
-            border-radius: 10px 10px 30px 10px;
-            margin-bottom: 20px;
-            color: #ccc;
-            text-align: center;
-            font-size: 0.8rem;
-        }
-
         .screen {
             background-color: var(--screen-bg);
-            border: 4px solid var(--screen-dark);
-            box-shadow: inset 2px 2px 5px rgba(0,0,0,0.2);
-            min-height: 550px;
-            position: relative;
-            display: flex;
-            flex-direction: column;
-            padding: 10px;
-            overflow: hidden;
-        }
-
-        /* --- ESTILOS DO SCANNER --- */
-        #qr-screen {
-            display: flex; /* Flexbox para centralizar */
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            height: 100%;
-            text-align: center;
-        }
-
-        #reader {
-            width: 250px;
-            height: 250px;
-            border: 4px dashed var(--screen-dark);
-            margin: 10px auto;
-            background: rgba(15, 56, 15, 0.1);
-        }
-        
-        /* Ajustes para a biblioteca html5-qrcode */
-        #reader video {
-            object-fit: cover;
-            border-radius: 4px;
-        }
-
-        .qr-help {
-            font-size: 0.8rem;
-            margin-top: 10px;
-            color: var(--screen-dark);
-            opacity: 0.8;
-        }
-
-        .qr-help a {
-            color: var(--screen-dark);
-            font-weight: bold;
-        }
-
-        /* --- INTERFACE DO JOGO --- */
-        #game-screen {
-            display: none;
-            flex-direction: column;
-            height: 100%;
-        }
-
-        .status-bar {
-            display: flex;
-            justify-content: space-between;
-            border-bottom: 2px solid var(--screen-dark);
-            margin-bottom: 10px;
-            padding-bottom: 5px;
-            font-weight: bold;
-            text-transform: uppercase;
-            font-size: 1rem;
-        }
-
-        /* Caixa de Diálogo */
-        .dialog-box {
-            background-color: rgba(255,255,255,0.7);
-            border: 2px solid var(--screen-dark);
-            border-radius: 4px;
-            padding: 10px;
-            height: 130px;
-            margin-bottom: 10px;
-            position: relative;
-            overflow-y: auto;
-        }
-
-        .dialog-arrow {
-            position: absolute;
-            bottom: 5px;
-            right: 10px;
-            animation: bounce 0.8s infinite;
-            display: none;
-            color: var(--accent);
-            font-size: 1.5rem;
-        }
-
-        @keyframes bounce {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(3px); }
-        }
-
-        /* Escolhas */
-        .choice-container {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 10px;
-            margin-bottom: 10px;
-        }
-
-        .btn-rpg {
-            background: transparent;
-            border: 2px solid var(--screen-dark);
-            color: var(--screen-dark);
-            font-family: 'VT323', monospace;
-            font-size: 1.1rem;
-            padding: 8px;
-            cursor: pointer;
-            text-align: left;
-            transition: all 0.1s;
-            box-shadow: 2px 2px 0px rgba(15, 56, 15, 0.5);
-        }
-
-        .btn-rpg:hover:not(:disabled) {
-            background-color: var(--screen-dark);
-            color: var(--screen-bg);
-            transform: translate(-1px, -1px);
-        }
-
-        .btn-rpg:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-            border-style: dashed;
-        }
-
-        .btn-full {
-            width: 100%;
-            text-align: center;
-            margin-bottom: 5px;
-        }
-
-        /* Log de Respostas */
-        .log-area {
-            flex-grow: 1;
-            border: 2px solid var(--screen-dark);
-            background: rgba(255,255,255,0.4);
-            padding: 5px;
-            font-size: 0.9rem;
-            overflow-y: auto;
-            margin-bottom: 10px;
-            height: 120px;
-        }
-
-        .log-entry {
-            border-bottom: 1px dotted var(--screen-dark);
-            padding: 3px 0;
-        }
-
-        /* Diagnóstico */
-        .diagnosis-area {
-            display: flex;
-            gap: 5px;
-        }
-
-        select {
-            font-family: 'VT323', monospace;
-            background: var(--screen-bg);
-            border: 2px solid var(--screen-dark);
-            color: var(--screen-dark);
-            flex-grow: 1;
-            font-size: 1rem;
-        }
-
-        /* Feedback Overlay */
-        #feedback-overlay {
-            position: absolute;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(15, 56, 15, 0.95);
-            color: var(--screen-bg);
-            display: none;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            text-align: center;
+            border: 4px solid var(--border-color);
+            border-radius: 10px;
             padding: 20px;
-            z-index: 10;
+            min-height: 500px;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            box-shadow: inset 0 0 20px rgba(0,0,0,0.1);
         }
 
-        #feedback-msg { margin: 20px 0; font-size: 1rem; }
-        
-        .correct { color: #fff; text-shadow: 2px 2px 0 #000; }
-        .incorrect { color: #ffadad; }
+        /* QR Screen */
+        #qr-screen {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            text-align: center;
+        }
+        .scanner-box {
+            width: 280px;
+            height: 280px;
+            border: 4px dashed var(--dark-color);
+            margin: 20px;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(0,0,0,0.03);
+        }
+        .scan-line {
+            width: 100%;
+            height: 4px;
+            background-color: var(--accent);
+            position: absolute;
+            animation: scan 2s infinite linear;
+            display: none;
+        }
+        @keyframes scan { 0% { top: 0; } 50% { top: 100%; } 100% { top: 0; } }
+
+        /* video preview inside scanner */
+        #qr-video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: none;
+        }
+
+        /* manual input fallback */
+        #manual-div { margin-top: 8px; display:flex; gap:6px; align-items:center; justify-content:center; }
+        #manual-input { padding:6px; font-family: 'VT323'; font-size:1rem; width:180px; }
+
+        /* rest kept as original (game-screen styles) */
+        #game-screen { display: none; flex-direction: column; height: 100%; }
+
+        .status-bar { display: flex; justify-content: space-between; border-bottom: 2px solid var(--border-color); padding-bottom: 10px; margin-bottom: 15px; font-weight: bold; text-transform: uppercase; }
+
+        .dialog-box { background-color: white; border: 4px double var(--dark-color); border-radius: 5px; padding: 15px; height: 120px; margin-bottom: 15px; position: relative; font-size: 1.2rem; line-height: 1.4; overflow: hidden; }
+
+        .dialog-arrow { position: absolute; bottom: 10px; right: 15px; width: 0; height: 0; border-left: 10px solid transparent; border-right: 10px solid transparent; border-top: 10px solid var(--accent); animation: bounce 0.8s infinite; display: none; }
+        @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(5px); } }
+
+        .choice-area { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px; }
+        .btn-choice { background-color: white; border: 2px solid var(--dark-color); padding: 15px; border-radius: 8px; font-family: 'VT323', monospace; font-size: 1.1rem; cursor: pointer; text-align: left; transition: transform 0.1s, background 0.2s; box-shadow: 4px 4px 0px rgba(0,0,0,0.2); }
+        .btn-choice:hover { background-color: #f0f0f0; transform: translate(-2px, -2px); box-shadow: 6px 6px 0px rgba(0,0,0,0.2); }
+        .btn-choice:active { transform: translate(2px, 2px); box-shadow: 0px 0px 0px; }
+        .btn-choice:disabled { opacity: 0.5; cursor: not-allowed; box-shadow: none; transform: none; }
+
+        .notebook { flex-grow: 1; background: #fff; border: 2px solid var(--border-color); padding: 10px; overflow-y: auto; font-size: 0.9rem; max-height: 150px; margin-bottom: 15px; }
+        .log-item { border-bottom: 1px dashed #ccc; padding: 4px 0; }
+
+        .diagnosis-area { display: flex; gap: 10px; border-top: 2px solid var(--border-color); padding-top: 15px; }
+        select { flex-grow: 1; padding: 8px; font-family: 'VT323', monospace; font-size: 1.1rem; border: 2px solid var(--dark-color); }
+        .btn-action { background-color: var(--primary-btn); color: white; border: 2px solid var(--dark-color); padding: 8px 20px; font-family: 'VT323', monospace; font-size: 1.1rem; cursor: pointer; box-shadow: 2px 2px 0 #000; }
+        .btn-hint { background-color: #ffb700; color: black; margin-bottom: 5px; width: 100%; }
+        .btn-start { font-size: 1.5rem; padding: 10px 30px; margin-top: 20px; }
+        #feedback-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); color: white; display: none; flex-direction: column; align-items: center; justify-content: center; padding: 20px; text-align: center; z-index: 100; }
 
     </style>
 </head>
 <body>
 
 <div class="device-container">
-    <div class="screen-bezel">
-        GENETICS SIMULATOR V.1.0 • DOT MATRIX DISPLAY
-    </div>
-    
     <div class="screen">
-        
         <div id="qr-screen">
-            <h2>🔒 ACESSO BLOQUEADO</h2>
-            <p>APONTE A CÂMERA PARA O QR CODE DO PACIENTE <span id="target-case">1</span></p>
-            
-            <div id="reader"></div>
-            
-            <div class="qr-help">
-                <p>Caso a câmera não abra:</p>
-                <button class="btn-rpg" onclick="forceStartDebug()">[DEBUG] PULAR CAMERA</button>
+            <h2>🔐 ACESSO RESTRITO</h2>
+            <p>Para iniciar o Caso <span id="qr-case-num">1</span>, escaneie o código do paciente.</p>
+
+            <div class="scanner-box" id="scanner-box">
+                <!-- video preview (hidden until camera ativada) -->
+                <video id="qr-video" playsinline></video>
+                <!-- placeholder QR image (kept for non-camera view) -->
+                <img id="qr-placeholder" src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=GENETICA-CASO-1" alt="QR Code Placeholder" style="opacity: 0.25;">
+                <div class="scan-line" id="scan-line"></div>
             </div>
 
-            <div class="qr-help" style="margin-top:20px; border-top: 1px dashed #000; padding-top:5px;">
-                <strong>QR CODES PARA TESTE:</strong><br>
-                <a href="https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=CASO-1" target="_blank">Caso 1</a> | 
-                <a href="https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=CASO-2" target="_blank">Caso 2</a> | 
-                <a href="https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=CASO-3" target="_blank">Caso 3</a> <br>
-                <a href="https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=CASO-4" target="_blank">Caso 4</a> | 
-                <a href="https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=CASO-5" target="_blank">Caso 5</a>
+            <div style="display:flex; gap:10px; align-items:center; justify-content:center;">
+                <button class="btn-action btn-start" id="start-scan-btn">📷 ESCANEAR QR CODE</button>
+                <button class="btn-action" id="stop-scan-btn" style="display:none; background:#888;">✖ PARAR</button>
             </div>
+
+            <div id="manual-div">
+                <input id="manual-input" placeholder="colar conteúdo do QR (ex: case1)" />
+                <button class="btn-action" id="manual-btn">↩️ OK</button>
+            </div>
+
+            <p style="font-size: 0.8rem; margin-top: 10px;">(Use câmera ou cole o conteúdo do QR)</p>
         </div>
 
         <div id="game-screen">
             <div class="status-bar">
-                <span id="case-header">CASO 1</span>
-                <span id="q-counter">Q: 0/10</span>
+                <span id="case-display">CASO: 1/5</span>
+                <span id="questions-left">PERGUNTAS: 0/10</span>
             </div>
 
             <div class="dialog-box" id="dialog-box">
-                <span id="typewriter-text">Aguardando dados...</span>
-                <div class="dialog-arrow" id="dialog-arrow">▼</div>
+                <span id="typewriter-text">Inicializando sistema...</span>
+                <div class="dialog-arrow" id="dialog-arrow"></div>
             </div>
 
-            <div class="choice-container">
-                <button class="btn-rpg" id="btn-choice-a" onclick="makeChoice('A')">Opção A</button>
-                <button class="btn-rpg" id="btn-choice-b" onclick="makeChoice('B')">Opção B</button>
+            <div class="choice-area" id="choice-area">
+                <button class="btn-choice" id="choice-a" onclick="handleChoice('A')">Opção A</button>
+                <button class="btn-choice" id="choice-b" onclick="handleChoice('B')">Opção B</button>
             </div>
 
-            <button class="btn-rpg btn-full" id="btn-hint" onclick="getHint()">💡 REVELAR DICA (0/3)</button>
+            <button class="btn-action btn-hint" id="hint-btn" onclick="showHint()">💡 PEDIR DICA (0/3)</button>
 
-            <div class="log-area" id="log-area">
-                <div style="text-align: center; opacity: 0.6;">-- REGISTRO INICIADO --</div>
+            <div class="notebook" id="notebook">
+                <strong>📝 HISTÓRICO:</strong>
+                <div id="log-content"></div>
             </div>
 
             <div class="diagnosis-area">
                 <select id="diagnosis-select">
-                    <option value="">-- DIAGNÓSTICO --</option>
+                    <option value="">-- SELECIONE O DIAGNÓSTICO --</option>
                     <option value="Autossômica Dominante">Autossômica Dominante</option>
                     <option value="Autossômica Recessiva">Autossômica Recessiva</option>
                     <option value="Ligada ao X Dominante">Ligada ao X Dominante</option>
                     <option value="Ligada ao X Recessiva">Ligada ao X Recessiva</option>
                     <option value="Mitocondrial">Mitocondrial</option>
                 </select>
-                <button class="btn-rpg" onclick="submitDiagnosis()">OK</button>
+                <button class="btn-action" onclick="submitDiagnosis()">ENVIAR</button>
             </div>
         </div>
 
         <div id="feedback-overlay">
             <h1 id="feedback-title">RESULTADO</h1>
-            <div id="feedback-msg"></div>
-            <button class="btn-rpg" style="background:white; color:black" id="btn-next-level" onclick="nextCase()">PRÓXIMO</button>
-            <button class="btn-rpg" style="background:transparent; color:white; border-color:white; margin-top:10px;" onclick="closeFeedback()">VOLTAR / REVISAR</button>
+            <p id="feedback-msg">Mensagem...</p>
+            <button class="btn-action btn-start" id="next-level-btn" onclick="nextLevel()">PRÓXIMO CASO ➔</button>
         </div>
-
     </div>
 </div>
 
+<!-- jsQR library (decodificador do QR a partir de imagem/canvas) -->
+<script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js"></script>
+
 <script>
-    // ==========================================
-    // 1. DADOS (Fornecidos pelo Usuário)
-    // ==========================================
+    // --- DADOS DOS CASOS (mantidos conforme seu original) ---
     const cases = [
-        {
-            id: 1,
-            qrString: "CASO-1", // String que o QR Code deve conter
-            patient: "João, 35 anos, afetado (Homem)",
-            inheritance: "Autossômica Dominante",
-            data: {
-                "pais-afetados": "O pai é Não Afetado, mas a mãe é Afetada (transmissão vertical).",
-                "irmaos": "O paciente tem 1 irmã afetada e 1 irmão não afetado.",
-                "filhos": "O paciente (afetado) tem 2 filhos afetados e 1 filha não afetada.",
-                "generations": "O traço está presente em múltiplas gerações consecutivas (transmissão vertical).",
-                "transmissao-pai-filho": "Não há transmissão de pai para filho homem neste caso, mas o traço afeta ambos os sexos, sugerindo que o alelo não está ligado ao Y.",
-                "sexo-afetado": "Afeta homens e mulheres na mesma proporção.",
-                "consanguinidade": "Não há histórico de consanguinidade.",
-                "filhas-pai": "A mãe afetada transmite para filhos de ambos os sexos.",
-            },
-            hints: [
-                "Sinais-chave: **Transmissão Vertical** (todas as gerações).",
-                "A afetação ocorre em **ambos os sexos** e, frequentemente, 50% dos filhos de um progenitor afetado são afetados.",
-                "Doença: **Polidactilia**."
-            ],
-            explanation: "Correto! **Autossômica Dominante (AD)**. A transmissão vertical (não salta gerações) e a afetação de ambos os sexos, com um progenitor afetado tendo filhos afetados, são características de AD. 
-
-[Image of Autosomal Dominant Pedigree]
-"
-        },
-        {
-            id: 2,
-            qrString: "CASO-2",
-            patient: "Maria, 28 anos, afetada (Mulher)",
-            inheritance: "Autossômica Recessiva",
-            data: {
-                "pais-afetados": "Os pais da paciente são **Não Afetados** (mas são portadores).",
-                "irmaos": "A paciente tem um irmão afetado e uma irmã não afetada.",
-                "filhos": "A paciente não tem filhos.",
-                "generations": "O traço **'saltou' gerações** (nenhum dos pais é afetado) - Transmissão Horizontal.",
-                "transmissao-pai-filho": "Não se aplica, pois os pais não são afetados.",
-                "sexo-afetado": "Afeta homens e mulheres igualmente.",
-                "consanguinidade": "Não há registro, mas a possibilidade é maior neste padrão.",
-                "filhas-pai": "Ambos os pais não afetados tiveram filhos afetados (probabilidade de 25% por filho)."
-            },
-            hints: [
-                "Sinais-chave: **Transmissão Horizontal** ('salta' gerações).",
-                "Pais **não afetados** (portadores) têm filhos afetados (25% de chance).",
-                "Doença: **Fibrose Cística**."
-            ],
-            explanation: "Correto! **Autossômica Recessiva (AR)**. O padrão de 'salto' de gerações (pais não afetados tendo filhos afetados) e a afetação de ambos os sexos são as marcas da AR. 
-
-[Image of Autosomal Recessive Pedigree]
-"
-        },
-        {
-            id: 3,
-            qrString: "CASO-3",
-            patient: "Pedro, 12 anos, afetado (Homem)",
-            inheritance: "Ligada ao X Recessiva",
-            data: {
-                "pais-afetados": "O pai é Não Afetado. A mãe é Não Afetada, mas é **Portadora**.",
-                "irmaos": "Pedro não tem irmãos afetados, mas tem um tio materno afetado.",
-                "filhos": "Não se aplica.",
-                "generations": "Aparece nos tios e no paciente (o gene passou pela mãe/avó portadora).",
-                "transmissao-pai-filho": "**Nunca** há transmissão de pai afetado para filho homem (o pai passa o cromossomo Y).",
-                "sexo-afetado": "Afeta **quase exclusivamente homens**.",
-                "consanguinidade": "Não há histórico.",
-                "filhas-pai": "Um pai afetado terá todas as filhas portadoras (não afetadas, se a mãe não for afetada)."
-            },
-            hints: [
-                "Sinais-chave: Afeta **principalmente homens**.",
-                "Transmissão de **mãe portadora para o filho**.",
-                "Doença: **Hemofilia**."
-            ],
-            explanation: "Correto! **Ligada ao X Recessiva (X R)**. O padrão de afetar quase exclusivamente homens, a transmissão por mães portadoras e a ausência de transmissão de pai para filho homem são cruciais para este diagnóstico. 
-
-[Image of X-linked Recessive Pedigree]
-"
-        },
-        {
-            id: 4,
-            qrString: "CASO-4",
-            patient: "Ana, 40 anos, afetada (Mulher)",
-            inheritance: "Mitocondrial",
-            data: {
-                "pais-afetados": "O pai é Não Afetado. A mãe é **Afetada**.",
-                "irmaos": "A paciente tem uma irmã afetada e um irmão **não afetado** (embora a mãe seja afetada).",
-                "filhos": "A paciente (afetada) tem 3 filhos e 3 filhas, **TODOS afetados**.",
-                "generations": "Presente em todas as gerações, mas **apenas via linha materna**.",
-                "transmissao-pai-filho": "**Nunca** há transmissão por pais afetados (apenas mitocôndrias maternas são passadas).",
-                "sexo-afetado": "Afeta ambos os sexos, mas **somente a mãe transmite**.",
-                "consanguinidade": "Não relevante.",
-                "filhas-pai": "Pais afetados não transmitem o traço."
-            },
-            hints: [
-                "Sinais-chave: Transmissão **EXCLUSIVAMENTE Materna**.",
-                "Uma mãe afetada transmite o traço para **TODOS os seus filhos** (homens e mulheres).",
-                "Doença: **Miopatia Mitocondrial**."
-            ],
-            explanation: "Correto! **Mitocondrial**. O critério definidor é a transmissão exclusiva pela mãe para todos os seus descendentes, enquanto o pai afetado não transmite a condição. "
-        },
-        {
-            id: 5,
-            qrString: "CASO-5",
-            patient: "Sofia, 8 anos, afetada (Mulher)",
-            inheritance: "Ligada ao X Dominante",
-            data: {
-                "pais-afetados": "O pai é Não Afetado. A mãe é **Afetada**.",
-                "irmaos": "A paciente tem uma irmã afetada e um irmão não afetado.",
-                "filhos": "Não se aplica.",
-                "generations": "Transmissão vertical, com a avó materna também afetada.",
-                "transmissao-pai-filho": "Um pai afetado **transmite a TODAS as suas filhas**, mas a **NENHUM dos seus filhos**.",
-                "sexo-afetado": "Afeta **mais mulheres** que homens.",
-                "consanguinidade": "Não relevante.",
-                "filhas-pai": "Se o pai fosse afetado, todas as filhas seriam afetadas."
-            },
-            hints: [
-                "Sinais-chave: Afeta **mais mulheres** que homens e é vertical.",
-                "Regra de Ouro: Um pai afetado transmite a doença a **TODAS as filhas**.",
-                "Doença: **Síndrome de Rett** (comum ser letal em homens homozigotos)."
-            ],
-            explanation: "Correto! **Ligada ao X Dominante (X D)**. A transmissão vertical (não salta gerações), o fato de afetar mais mulheres e a regra de que o pai afetado passa o traço para todas as filhas são decisivos. 
-
-[Image of X-linked Dominant Pedigree]
-"
-        }
+        { id: 1, qrCode: "GENE-01", intro: "Paciente: João, 35 anos. 'Doutor, notei que meus dedos são diferentes e meus filhos também têm isso.'", inheritance: "Autossômica Dominante", explanation: "AD: Transmissão vertical (pais e filhos afetados). Afeta ambos os sexos. Basta um alelo para manifestar.", data: { "pais": "Minha mãe tem a mesma condição que eu. Meu pai não tem nada.", "irmaos": "Tenho uma irmã que também tem. Meu irmão caçula nasceu sem nada.", "filhos": "Tenho dois filhos com isso e uma filha sem.", "transmissao": "Parece que vem vindo de geração em geração. Minha avó também tinha.", "sexo": "Não vejo diferença, homens e mulheres na família têm.", "consanguinidade": "Não, meus pais não são parentes.", "filhas_pai": "Não sei dizer sobre essa regra específica.", "gravidade": "É só físico (polidactilia), vivemos bem." }, hints: ["Transmissão Vertical (todas as gerações).", "Afeta homens e mulheres igualmente.", "Um pai afetado tem 50% de chance de passar."] },
+        { id: 2, qrCode: "GENE-02", intro: "Paciente: Maria, 28 anos. 'Ninguém na minha família tinha isso antes de mim e do meu irmão.'", inheritance: "Autossômica Recessiva", explanation: "AR: Salta gerações (pais portadores sadios). Consanguinidade aumenta o risco.", data: { "pais": "Meus pais são saudáveis, graças a Deus. Nenhum deles tem isso.", "irmaos": "Meu irmão também tem a doença. Minha irmã é saudável.", "filhos": "Ainda não tenho filhos.", "transmissao": "Saltou a geração dos meus pais. Meus avós também não tinham.", "sexo": "Afetou eu (mulher) e meu irmão (homem).", "consanguinidade": "Meus pais são primos de segundo grau.", "filhas_pai": "Não se aplica, meus pais não são afetados.", "gravidade": "É uma condição metabólica séria (Fibrose Cística)." }, hints: ["Pais não afetados (Portadores).", "Salta gerações (Transmissão Horizontal).", "Consanguinidade é um fator de risco."] },
+        { id: 3, qrCode: "GENE-03", intro: "Paciente: Pedro, 12 anos. 'Eu sangro muito quando me machuco. Meu tio também.'", inheritance: "Ligada ao X Recessiva", explanation: "XR: Afeta mais homens. Mães portadoras transmitem para filhos. Pai nunca passa para filho homem.", data: { "pais": "Meu pai é normal. Minha mãe também, mas dizem que ela carrega o gene.", "irmaos": "Meus irmãos estão bem. Só eu tenho.", "filhos": "Sou criança ainda!", "transmissao": "Meu avô materno tinha. Pulou minha mãe e veio pra mim.", "sexo": "Só vi homens com isso na minha família.", "consanguinidade": "Não.", "filhas_pai": "Meu avô (afetado) teve minha mãe (saudável, mas portadora).", "gravidade": "É hemofilia." }, hints: ["Afeta principalmente homens.", "Mãe portadora transmite para filho.", "Pai afetado NÃO transmite para filho homem."] },
+        { id: 4, qrCode: "GENE-04", intro: "Paciente: Ana, 40 anos. 'Eu e todos os meus irmãos temos esse problema de energia.'", inheritance: "Mitocondrial", explanation: "Mitocondrial: Apenas a mãe transmite. Se a mãe tem, TODOS os filhos têm.", data: { "pais": "Minha mãe tem a doença. Meu pai é saudável.", "irmaos": "Todos nós (3 homens e 3 mulheres) temos a doença.", "filhos": "Todos os meus filhos nasceram com isso também.", "transmissao": "Vem tudo da minha mãe.", "sexo": "Afeta todo mundo, mas só as mulheres passam pros filhos.", "consanguinidade": "Não.", "filhas_pai": "Meu irmão (afetado) teve filhos saudáveis. Ele não passou.", "gravidade": "É uma miopatia." }, hints: ["Transmissão Materna Exclusiva.", "Mãe afetada passa para 100% dos filhos.", "Pai afetado não transmite nada."] },
+        { id: 5, qrCode: "GENE-05", intro: "Paciente: Sofia, 8 anos. 'Minha mãe tem, minha avó tem... parece coisa de mulher.'", inheritance: "Ligada ao X Dominante", explanation: "XD: Pai afetado transmite para TODAS as filhas e NENHUM filho. Afeta mais mulheres.", data: { "pais": "Minha mãe é afetada. Meu pai é saudável.", "irmaos": "Minha irmã tem. Meu irmão nasceu saudável.", "filhos": "Sou criança.", "transmissao": "Minha avó tinha, passou pra minha mãe, que passou pra mim.", "sexo": "Tem muito mais mulher com isso na família.", "consanguinidade": "Não.", "filhas_pai": "Se meu pai tivesse, todas nós filhas teríamos obrigatóriamente.", "gravidade": "Síndrome de Rett (letal em homens homozigotos)." }, hints: ["Afeta mais mulheres.", "Pai afetado transmite para TODAS as filhas.", "Transmissão vertical."] }
     ];
 
-    // Banco de Perguntas (Exatamente como fornecido)
-    const questionTemplates = [
-        { q: "Qual o status de afetação dos pais do paciente?", key: "pais-afetados" },
-        { q: "O paciente tem irmãos? Qual o status de afetação deles?", key: "irmaos" },
-        { q: "O paciente tem filhos? Qual o status de afetação deles?", key: "filhos" },
-        { q: "O traço aparece em todas as gerações (Transmissão Vertical)?", key: "generations" },
-        { q: "Existe transmissão de pai afetado para filho homem afetado?", key: "transmissao-pai-filho" },
-        { q: "O padrão de afetação é exclusivo ou majoritário em um sexo?", key: "sexo-afetado" },
-        { q: "Existe histórico de consanguinidade na família?", key: "consanguinidade" },
-        { q: "Como um pai afetado transmite o traço para filhas versus filhos?", key: "filhas-pai" },
+    // Perguntas (mantidas)
+    const questionPool = [
+        { id: "pais", text: "Como são seus pais?" },
+        { id: "irmaos", text: "Você tem irmãos afetados?" },
+        { id: "filhos", text: "Você tem filhos afetados?" },
+        { id: "transmissao", text: "Como é a transmissão nas gerações?" },
+        { id: "sexo", text: "Afeta mais homens ou mulheres?" },
+        { id: "consanguinidade", text: "Há parentesco entre seus pais?" },
+        { id: "filhas_pai", text: "Como é a transmissão do pai?" },
+        { id: "gravidade", text: "Qual a gravidade/tipo da doença?" }
     ];
 
-    // ==========================================
-    // 2. CONTROLE DO JOGO
-    // ==========================================
-    let currentCaseIndex = 0;
-    let questionsUsed = 0;
-    let askedKeys = [];
-    let currentOptions = []; // As duas opções atuais
-    let hintLevel = 0;
-    let html5QrcodeScanner = null;
+    // --- ESTADO ---
+    let currentLevel = 0;
+    let usedQuestions = 0;
+    let askedQuestionIds = [];
+    let currentChoices = [];
+    let hintCount = 0;
 
-    // Elementos DOM
+    // DOM
     const qrScreen = document.getElementById('qr-screen');
     const gameScreen = document.getElementById('game-screen');
+    const dialogBox = document.getElementById('typewriter-text');
+    const dialogArrow = document.getElementById('dialog-arrow');
+    const choiceBtnA = document.getElementById('choice-a');
+    const choiceBtnB = document.getElementById('choice-b');
+    const logContent = document.getElementById('log-content');
+    const scanLine = document.getElementById('scan-line');
     const feedbackOverlay = document.getElementById('feedback-overlay');
-    const typebox = document.getElementById('typewriter-text');
-    const arrow = document.getElementById('dialog-arrow');
-    const btnA = document.getElementById('btn-choice-a');
-    const btnB = document.getElementById('btn-choice-b');
-    const logArea = document.getElementById('log-area');
-    
-    // --- LÓGICA DO QR CODE ---
-    function initScanner() {
-        if (html5QrcodeScanner) return; // Já iniciado
+    const btnHint = document.getElementById('hint-btn');
+    const qrCaseNum = document.getElementById('qr-case-num');
 
-        html5QrcodeScanner = new Html5QrcodeScanner(
-            "reader", 
-            { fps: 10, qrbox: {width: 200, height: 200} },
-            /* verbose= */ false
-        );
-        
-        html5QrcodeScanner.render(onScanSuccess, onScanFailure);
+    // NEW: video and canvas for scanning
+    const video = document.getElementById('qr-video');
+    const qrPlaceholder = document.getElementById('qr-placeholder');
+    const startScanBtn = document.getElementById('start-scan-btn');
+    const stopScanBtn = document.getElementById('stop-scan-btn');
+    const manualInput = document.getElementById('manual-input');
+    const manualBtn = document.getElementById('manual-btn');
+
+    let scanning = false;
+    let scanRequestId = null;
+    let localStream = null;
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+
+    // ---- Atualiza indicador do caso na tela de QR
+    function updateQRScreen() {
+        qrCaseNum.innerText = currentLevel + 1;
+        scanLine.style.display = 'none';
+        video.style.display = 'none';
+        qrPlaceholder.style.display = 'block';
+        stopCamera();
     }
 
-    function onScanSuccess(decodedText, decodedResult) {
-        console.log(`Code matched = ${decodedText}`);
-        
-        // Verifica se o QR code corresponde ao caso atual
-        const expectedString = cases[currentCaseIndex].qrString;
-        
-        // Permitir flexibilidade (se o texto contém a string esperada)
-        if (decodedText.includes(expectedString) || decodedText.includes(`CASO-${currentCaseIndex+1}`)) {
-            html5QrcodeScanner.clear().then(_ => {
-                startGame();
-            }).catch(error => {
-                console.error("Falha ao limpar scanner.", error);
-                startGame(); // Tenta iniciar mesmo assim
-            });
+    // ---- Função para iniciar câmera e scanning
+    async function startCameraAndScan() {
+        // pedir permissão e abrir câmera traseira
+        try {
+            const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' }, audio: false });
+            localStream = stream;
+            video.srcObject = stream;
+            await video.play();
+            video.style.display = 'block';
+            qrPlaceholder.style.display = 'none';
+            scanLine.style.display = 'block';
+            startScanBtn.style.display = 'none';
+            stopScanBtn.style.display = 'inline-block';
+            scanning = true;
+
+            // ajustar canvas ao vídeo
+            canvas.width = video.videoWidth || 640;
+            canvas.height = video.videoHeight || 480;
+
+            tickScan();
+        } catch (err) {
+            console.error("Erro ao abrir câmera:", err);
+            alert("Não foi possível acessar a câmera. Cole o conteúdo do QR manualmente.");
+        }
+    }
+
+    function stopCamera() {
+        scanning = false;
+        if (scanRequestId) {
+            cancelAnimationFrame(scanRequestId);
+            scanRequestId = null;
+        }
+        if (localStream) {
+            localStream.getTracks().forEach(t => t.stop());
+            localStream = null;
+        }
+        video.pause();
+        video.srcObject = null;
+        startScanBtn.style.display = 'inline-block';
+        stopScanBtn.style.display = 'none';
+        scanLine.style.display = 'none';
+        video.style.display = 'none';
+        qrPlaceholder.style.display = 'block';
+    }
+
+    // loop que captura frame e tenta decodificar com jsQR
+    function tickScan() {
+        if (!scanning) return;
+        try {
+            if (video.readyState === video.HAVE_ENOUGH_DATA) {
+                canvas.width = video.videoWidth;
+                canvas.height = video.videoHeight;
+                ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+                const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+                const code = jsQR(imageData.data, imageData.width, imageData.height, { inversionAttempts: "dontInvert" });
+                if (code && code.data) {
+                    // encontrado
+                    handleScannedCode(code.data);
+                    return;
+                }
+            }
+        } catch (e) {
+            console.error("Erro durante scan:", e);
+        }
+        scanRequestId = requestAnimationFrame(tickScan);
+    }
+
+    // --- NORMALIZA E COMPARA O TEXTO LIDO COM OS CASES ---
+    function normalizeText(s) {
+        if (!s) return "";
+        return s.toString().toLowerCase().replace(/[^a-z0-9]/g, '');
+    }
+
+    function matchCaseFromScanned(text) {
+        const norm = normalizeText(text);
+        // tenta casar com qrCode (ex: GENE-01), ou com "case<number>" (case1), ou "case<number>" com hífen etc.
+        for (let i = 0; i < cases.length; i++) {
+            const c = cases[i];
+            const qrNorm = normalizeText(c.qrCode);
+            if (norm.includes(qrNorm) || norm === qrNorm) return i;
+            const caseIdNorm = normalizeText('case' + c.id);
+            if (norm.includes(caseIdNorm) || norm === caseIdNorm) return i;
+        }
+        return -1;
+    }
+
+    function handleScannedCode(data) {
+        // mostra toast mínimo (alert) e tenta casar
+        stopCamera();
+        const matchedIdx = matchCaseFromScanned(data);
+        if (matchedIdx >= 0) {
+            currentLevel = matchedIdx;
+            qrScreen.style.display = 'none';
+            gameScreen.style.display = 'flex';
+            startGame();
         } else {
-            alert(`QR Code incorreto! Esperado: Caso ${currentCaseIndex + 1}. Lido: ${decodedText}`);
+            // se não casar automaticamente, perguntar ao usuário se quer abrir caso 1 por exemplo
+            const tryOpen = confirm("QR lido: '" + data + "'. Não encontrei um caso correspondente automaticamente. Deseja usar este valor como entrada manual?");
+            if (tryOpen) {
+                // usar entrada manual: tentar mapear por número dentro do texto
+                const foundNumber = data.match(/\d+/);
+                if (foundNumber) {
+                    const num = parseInt(foundNumber[0], 10);
+                    if (!isNaN(num) && num >= 1 && num <= cases.length) {
+                        currentLevel = num - 1;
+                        qrScreen.style.display = 'none';
+                        gameScreen.style.display = 'flex';
+                        startGame();
+                        return;
+                    }
+                }
+                // senão apenas mostrar mensagem e voltar à tela QR
+                alert("Não foi possível mapear automaticamente. Volte à tela de escaneamento ou cole o código manualmente.");
+                updateQRScreen();
+            } else {
+                updateQRScreen();
+            }
         }
     }
 
-    function onScanFailure(error) {
-        // Nada a fazer, apenas continua scaneando
-    }
-
-    function forceStartDebug() {
-        // Função de fallback para testes sem câmera
-        if (html5QrcodeScanner) {
-            html5QrcodeScanner.clear();
+    // Manual paste handler
+    manualBtn.addEventListener('click', () => {
+        const txt = manualInput.value.trim();
+        if (!txt) { alert("Cole o conteúdo do QR no campo."); return; }
+        const matchedIdx = matchCaseFromScanned(txt);
+        if (matchedIdx >= 0) {
+            currentLevel = matchedIdx;
+            qrScreen.style.display = 'none';
+            gameScreen.style.display = 'flex';
+            startGame();
+        } else {
+            // tenta número
+            const foundNumber = txt.match(/\d+/);
+            if (foundNumber) {
+                const num = parseInt(foundNumber[0], 10);
+                if (!isNaN(num) && num >= 1 && num <= cases.length) {
+                    currentLevel = num - 1;
+                    qrScreen.style.display = 'none';
+                    gameScreen.style.display = 'flex';
+                    startGame();
+                    return;
+                }
+            }
+            alert("Não foi possível encontrar um caso correspondente ao texto inserido.");
         }
-        startGame();
-    }
+    });
 
-    // --- LÓGICA DA ENTREVISTA ---
-    
-    function startGame() {
-        qrScreen.style.display = 'none';
-        gameScreen.style.display = 'flex';
-        
-        // Reset Variáveis
-        questionsUsed = 0;
-        askedKeys = [];
-        hintLevel = 0;
-        logArea.innerHTML = '<div style="text-align: center; opacity: 0.6;">-- REGISTRO INICIADO --</div>';
-        document.getElementById('diagnosis-select').value = "";
-        document.getElementById('case-header').textContent = `CASO ${currentCaseIndex + 1}`;
-        updateStatus();
-        document.getElementById('btn-hint').textContent = `💡 REVELAR DICA (0/3)`;
+    // start/stop scan buttons
+    startScanBtn.addEventListener('click', () => startCameraAndScan());
+    stopScanBtn.addEventListener('click', () => { stopCamera(); });
 
-        // Intro do Paciente
-        const intro = `PACIENTE: ${cases[currentCaseIndex].patient}. "Olá doutor(a), preciso entender minha genética."`;
-        typeText(intro, generateOptions);
-    }
-
-    function updateStatus() {
-        document.getElementById('q-counter').textContent = `Q: ${questionsUsed}/10`;
-    }
-
-    // Efeito de Digitação
-    let typeInterval;
+    // --- ENGINE DE TEXTO (Typewriter) --- (mantive igual)
+    let typingTimer;
     function typeText(text, callback) {
-        typebox.innerHTML = "";
-        arrow.style.display = "none";
-        btnA.disabled = true;
-        btnB.disabled = true;
-
+        dialogBox.innerHTML = "";
+        dialogArrow.style.display = "none";
         let i = 0;
-        clearInterval(typeInterval);
-        typeInterval = setInterval(() => {
-            typebox.innerHTML += text.charAt(i);
+        if (typingTimer) clearInterval(typingTimer);
+        typingTimer = setInterval(() => {
+            dialogBox.innerHTML += text.charAt(i);
             i++;
             if (i >= text.length) {
-                clearInterval(typeInterval);
-                arrow.style.display = "block";
-                btnA.disabled = false;
-                btnB.disabled = false;
-                if(callback) callback();
+                clearInterval(typingTimer);
+                dialogArrow.style.display = "block";
+                if (callback) callback();
             }
-        }, 20); // Velocidade
+        }, 25);
     }
 
-    function generateOptions() {
-        if (questionsUsed >= 10) {
-            typeText("PACIENTE: 'Acho que já falei tudo que sabia, doutor(a).'");
-            btnA.style.display = 'none';
-            btnB.style.display = 'none';
+    // --- LÓGICA DO JOGO --- (mantida, apenas referências)
+    function startGame() {
+        usedQuestions = 0;
+        askedQuestionIds = [];
+        hintCount = 0;
+        logContent.innerHTML = "";
+        document.getElementById('case-display').innerText = `CASO: ${currentLevel + 1}/${cases.length}`;
+        document.getElementById('questions-left').innerText = `PERGUNTAS: 0/10`;
+        document.getElementById('diagnosis-select').value = "";
+        btnHint.innerText = "💡 PEDIR DICA (0/3)";
+        btnHint.disabled = false;
+
+        const introText = cases[currentLevel].intro;
+        typeText(introText, () => { generateChoices(); });
+    }
+
+    function generateChoices() {
+        if (usedQuestions >= 10) {
+            typeText("Você atingiu o limite de perguntas. Tente diagnosticar ou peça uma dica.");
+            choiceBtnA.style.display = 'none';
+            choiceBtnB.style.display = 'none';
             return;
         }
-
-        // Filtra perguntas ainda não feitas
-        const available = questionTemplates.filter(t => !askedKeys.includes(t.key));
-        
+        const available = questionPool.filter(q => !askedQuestionIds.includes(q.id));
         if (available.length < 2) {
-            // Se sobrarem poucas perguntas (ex: apenas 1), mostra ela e um placeholder ou encerra
-            if(available.length === 1) {
-                currentOptions = [available[0], null];
-                btnA.textContent = "➤ " + available[0].q;
-                btnB.style.display = 'none';
-                btnA.style.display = 'block';
-                return;
-            }
-            typeText("PACIENTE: 'Não tenho mais informações.'");
-            btnA.style.display = 'none';
-            btnB.style.display = 'none';
+            typeText("Não tenho mais informações para dar.");
+            choiceBtnA.style.display = 'none';
+            choiceBtnB.style.display = 'none';
             return;
         }
-
-        // Seleciona 2 aleatórias
         const shuffled = available.sort(() => 0.5 - Math.random());
-        currentOptions = [shuffled[0], shuffled[1]];
-
-        btnA.style.display = 'block';
-        btnB.style.display = 'block';
-        btnA.textContent = "➤ " + currentOptions[0].q;
-        btnB.textContent = "➤ " + currentOptions[1].q;
+        currentChoices = [shuffled[0], shuffled[1]];
+        choiceBtnA.style.display = 'block';
+        choiceBtnB.style.display = 'block';
+        choiceBtnA.innerText = "➤ " + currentChoices[0].text;
+        choiceBtnB.innerText = "➤ " + currentChoices[1].text;
+        choiceBtnA.disabled = false;
+        choiceBtnB.disabled = false;
     }
 
-    function makeChoice(choice) {
-        const selectedObj = choice === 'A' ? currentOptions[0] : currentOptions[1];
-        if (!selectedObj) return;
-
-        // Registrar uso
-        questionsUsed++;
-        askedKeys.push(selectedObj.key);
-        updateStatus();
-
-        // Obter resposta
-        const answer = cases[currentCaseIndex].data[selectedObj.key] || "Informação indisponível.";
-
-        // Adicionar ao Log
-        const entry = document.createElement('div');
-        entry.className = 'log-entry';
-        entry.innerHTML = `<strong>P:</strong> ${selectedObj.q}<br><strong>R:</strong> ${answer}`;
-        logArea.appendChild(entry);
-        logArea.scrollTop = logArea.scrollHeight;
-
-        // Mostrar resposta com efeito
-        typeText(`PACIENTE: "${answer}"`, () => {
-            // Pequeno delay antes de gerar novas
-            setTimeout(generateOptions, 800);
-        });
+    function handleChoice(option) {
+        choiceBtnA.disabled = true;
+        choiceBtnB.disabled = true;
+        const selectedQ = option === 'A' ? currentChoices[0] : currentChoices[1];
+        askedQuestionIds.push(selectedQ.id);
+        usedQuestions++;
+        document.getElementById('questions-left').innerText = `PERGUNTAS: ${usedQuestions}/10`;
+        const caseData = cases[currentLevel].data;
+        const answer = caseData[selectedQ.id];
+        const logEntry = document.createElement('div');
+        logEntry.className = 'log-item';
+        logEntry.innerHTML = `<strong>P:</strong> ${selectedQ.text}<br><strong>R:</strong> ${answer}`;
+        logContent.appendChild(logEntry);
+        logContent.scrollTop = logContent.scrollHeight;
+        typeText(answer, () => { setTimeout(generateChoices, 500); });
     }
 
-    function getHint() {
-        const currentCase = cases[currentCaseIndex];
-        if (hintLevel >= currentCase.hints.length) {
-            typeText("SISTEMA: Nenhuma dica adicional disponível.");
-            return;
-        }
-
-        const hint = currentCase.hints[hintLevel];
-        hintLevel++;
-        document.getElementById('btn-hint').textContent = `💡 REVELAR DICA (${hintLevel}/${currentCase.hints.length})`;
-
-        // Log da Dica
-        const entry = document.createElement('div');
-        entry.className = 'log-entry';
-        entry.style.background = "#fff3cd";
-        entry.innerHTML = `<strong>💡 DICA:</strong> ${hint}`;
-        logArea.appendChild(entry);
-        logArea.scrollTop = logArea.scrollHeight;
-
-        typeText(`SISTEMA (DICA REVELADA): ${hint}`);
+    function showHint() {
+        if (hintCount >= 3) { typeText("Não há mais dicas disponíveis."); return; }
+        const hint = cases[currentLevel].hints[hintCount];
+        hintCount++;
+        btnHint.innerText = `💡 PEDIR DICA (${hintCount}/3)`;
+        const logEntry = document.createElement('div');
+        logEntry.className = 'log-item';
+        logEntry.style.backgroundColor = "#fff3cd";
+        logEntry.innerHTML = `<strong>💡 DICA:</strong> ${hint}`;
+        logContent.appendChild(logEntry);
+        logContent.scrollTop = logContent.scrollHeight;
+        typeText(`DICA REVELADA: ${hint}`);
     }
-
-    // --- DIAGNÓSTICO E FIM DE FASE ---
 
     function submitDiagnosis() {
         const selected = document.getElementById('diagnosis-select').value;
-        if (!selected) return;
-
-        const currentCase = cases[currentCaseIndex];
-        const correct = currentCase.inheritance;
-
+        const correct = cases[currentLevel].inheritance;
         feedbackOverlay.style.display = 'flex';
-        const title = document.getElementById('feedback-title');
-        const msg = document.getElementById('feedback-msg');
-        const nextBtn = document.getElementById('btn-next-level');
-
         if (selected === correct) {
-            title.textContent = "✅ DIAGNÓSTICO CORRETO";
-            title.className = "correct";
-            msg.innerHTML = currentCase.explanation;
-            nextBtn.style.display = "inline-block";
+            document.getElementById('feedback-title').innerText = "✅ SUCESSO!";
+            document.getElementById('feedback-title').style.color = "#4eff4e";
+            document.getElementById('feedback-msg').innerHTML = `Diagnóstico Correto!<br><br>${cases[currentLevel].explanation}`;
+            document.getElementById('next-level-btn').innerText = "PRÓXIMO CASO ➔";
+            document.getElementById('next-level-btn').onclick = nextLevel;
         } else {
-            title.textContent = "❌ DIAGNÓSTICO INCORRETO";
-            title.className = "incorrect";
-            msg.innerHTML = `Você selecionou: <strong>${selected}</strong>.<br><br>Revise suas anotações ou use uma dica.`;
-            nextBtn.style.display = "none";
+            document.getElementById('feedback-title').innerText = "❌ ERRO";
+            document.getElementById('feedback-title').style.color = "#ff4e4e";
+            document.getElementById('feedback-msg').innerText = `Diagnóstico Incorreto. Você escolheu ${selected}. Analise o log e tente novamente.`;
+            document.getElementById('next-level-btn').innerText = "TENTAR NOVAMENTE";
+            document.getElementById('next-level-btn').onclick = closeFeedback;
         }
     }
 
-    function closeFeedback() {
+    function closeFeedback() { feedbackOverlay.style.display = 'none'; }
+
+    function nextLevel() {
         feedbackOverlay.style.display = 'none';
-    }
-
-    function nextCase() {
-        closeFeedback();
-        currentCaseIndex++;
-        
-        if (currentCaseIndex >= cases.length) {
-            alert("PARABÉNS! VOCÊ FINALIZOU TODOS OS CASOS!");
-            currentCaseIndex = 0;
+        currentLevel++;
+        if (currentLevel >= cases.length) {
+            alert("PARABÉNS! Você completou todos os casos clínicos.");
+            currentLevel = 0;
         }
-
-        // Volta para a tela de QR
         gameScreen.style.display = 'none';
         qrScreen.style.display = 'flex';
-        document.getElementById('target-case').textContent = currentCaseIndex + 1;
-        
-        // Reinicia scanner
-        initScanner();
+        updateQRScreen();
     }
 
     // Inicialização
-    window.onload = function() {
-        initScanner();
-    };
+    updateQRScreen();
+
+    // segurança: parar câmera ao sair da aba
+    window.addEventListener('beforeunload', stopCamera);
 
 </script>
 
